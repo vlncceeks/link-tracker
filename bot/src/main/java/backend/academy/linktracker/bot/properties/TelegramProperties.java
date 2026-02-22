@@ -19,7 +19,6 @@ import org.springframework.validation.annotation.Validated;
 @EqualsAndHashCode
 @NoArgsConstructor
 public class TelegramProperties {
-
     @NotEmpty
     @URL
     private String url;
