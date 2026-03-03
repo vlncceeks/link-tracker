@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.runner;
+package backend.academy.linktracker.bot.bootstrap;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.BotCommand;

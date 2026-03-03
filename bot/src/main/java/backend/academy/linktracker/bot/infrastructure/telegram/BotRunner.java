@@ -1,10 +1,11 @@
-package backend.academy.linktracker.bot.runner;
+package backend.academy.linktracker.bot.infrastructure.telegram;
 
-import backend.academy.linktracker.bot.command.HelpCommand;
-import backend.academy.linktracker.bot.command.StartCommand;
-import backend.academy.linktracker.bot.dispatcher.CommandDispatcher;
-import backend.academy.linktracker.bot.repository.CommandRepository;
-import backend.academy.linktracker.bot.repository.InMemoryCommandRepository;
+import backend.academy.linktracker.bot.application.command.CommandDispatcher;
+import backend.academy.linktracker.bot.application.command.CommandRepository;
+import backend.academy.linktracker.bot.application.command.impl.HelpCommand;
+import backend.academy.linktracker.bot.application.command.impl.StartCommand;
+import backend.academy.linktracker.bot.bootstrap.BotCommandsSetup;
+import backend.academy.linktracker.bot.infrastructure.registry.InMemoryCommandRepository;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import org.slf4j.Logger;

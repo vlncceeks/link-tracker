@@ -1,6 +1,7 @@
-package backend.academy.linktracker.bot.repository;
+package backend.academy.linktracker.bot.infrastructure.registry;
 
-import backend.academy.linktracker.bot.command.Command;
+import backend.academy.linktracker.bot.application.command.Command;
+import backend.academy.linktracker.bot.application.command.CommandRepository;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
@@ -12,11 +13,11 @@ public class InMemoryCommandRepository implements CommandRepository {
 
     @Override
     public void addCommand(Command command) {
-        repository.put(command.getName(), command);
+        repository.putIfAbsent(command.getName(), command);
     }
 
     @Override
-    public Optional<Command> getCommand(String commandName) {
+    public Optional<Command> findCommand(String commandName) {
         return Optional.ofNullable(repository.get(commandName));
     }
 

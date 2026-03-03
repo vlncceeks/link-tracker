@@ -1,13 +1,12 @@
-package backend.academy.linktracker.bot.repository;
+package backend.academy.linktracker.bot.application.command;
 
-import backend.academy.linktracker.bot.command.Command;
 import java.util.Optional;
 import java.util.Set;
 
 public interface CommandRepository {
     void addCommand(Command command);
 
-    Optional<Command> getCommand(String commandName);
+    Optional<Command> findCommand(String commandName);
 
     Set<Command> getAllCommands();
 }

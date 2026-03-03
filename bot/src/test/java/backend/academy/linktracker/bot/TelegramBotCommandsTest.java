@@ -1,25 +1,33 @@
 package backend.academy.linktracker.bot;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import backend.academy.linktracker.bot.command.HelpCommand;
-import backend.academy.linktracker.bot.command.StartCommand;
-import backend.academy.linktracker.bot.dispatcher.CommandDispatcher;
-import backend.academy.linktracker.bot.repository.InMemoryCommandRepository;
+import backend.academy.linktracker.bot.application.command.CommandDispatcher;
+import backend.academy.linktracker.bot.application.command.impl.HelpCommand;
+import backend.academy.linktracker.bot.application.command.impl.StartCommand;
+import backend.academy.linktracker.bot.infrastructure.registry.InMemoryCommandRepository;
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.model.Chat;
-import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class TelegramBotCommandsTest {
 
     private TelegramBot bot;
     private CommandDispatcher dispatcher;
+
+    @Captor
+    ArgumentCaptor<SendMessage> captor = ArgumentCaptor.forClass(SendMessage.class);
 
     @BeforeEach
     void setUp() {
@@ -38,7 +46,6 @@ class TelegramBotCommandsTest {
 
         dispatcher.handleUpdate(update);
 
-        ArgumentCaptor<SendMessage> captor = ArgumentCaptor.forClass(SendMessage.class);
         verify(bot).execute(captor.capture());
 
         SendMessage message = captor.getValue();
@@ -54,7 +61,6 @@ class TelegramBotCommandsTest {
 
         dispatcher.handleUpdate(update);
 
-        ArgumentCaptor<SendMessage> captor = ArgumentCaptor.forClass(SendMessage.class);
         verify(bot).execute(captor.capture());
 
         SendMessage message = captor.getValue();
@@ -70,7 +76,6 @@ class TelegramBotCommandsTest {
 
         dispatcher.handleUpdate(update);
 
-        ArgumentCaptor<SendMessage> captor = ArgumentCaptor.forClass(SendMessage.class);
         verify(bot).execute(captor.capture());
 
         SendMessage message = captor.getValue();
@@ -81,16 +86,11 @@ class TelegramBotCommandsTest {
     }
 
     private Update createUpdate(String text, String username, Long chatId) {
-        Chat chat = mock(com.pengrad.telegrambot.model.Chat.class);
-        when(chat.id()).thenReturn(chatId);
-        when(chat.username()).thenReturn(username);
+        Update update = mock(Update.class, RETURNS_DEEP_STUBS);
 
-        Message message = mock(Message.class);
-        when(message.text()).thenReturn(text);
-        when(message.chat()).thenReturn(chat);
-
-        Update update = mock(Update.class);
-        when(update.message()).thenReturn(message);
+        when(update.message().chat().id()).thenReturn(chatId);
+        when(update.message().chat().username()).thenReturn(username);
+        when(update.message().text()).thenReturn(text);
 
         return update;
     }

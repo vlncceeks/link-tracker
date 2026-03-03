@@ -1,6 +1,6 @@
-package backend.academy.linktracker.bot;
+package backend.academy.linktracker.bot.bootstrap;
 
-import backend.academy.linktracker.bot.runner.BotRunner;
+import backend.academy.linktracker.bot.infrastructure.telegram.BotRunner;
 import com.pengrad.telegrambot.TelegramBot;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Profile;
