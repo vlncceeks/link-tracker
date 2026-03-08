@@ -1,5 +1,7 @@
 package backend.academy.linktracker.bot.application.command;
 
+import backend.academy.linktracker.bot.application.state.TrackDialogHandler;
+import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
@@ -11,10 +13,14 @@ public class CommandDispatcher {
     private static final Logger logger = LoggerFactory.getLogger(CommandDispatcher.class);
     private final CommandRepository repository;
     private final TelegramBot bot;
+    private final TrackSessionRepository sessionRepository;
+    private final TrackDialogHandler dialogHandler;
 
-    public CommandDispatcher(CommandRepository repository, TelegramBot bot) {
+    public CommandDispatcher(CommandRepository repository, TelegramBot bot, TrackSessionRepository sessionRepository, TrackDialogHandler dialogHandler) {
         this.repository = repository;
         this.bot = bot;
+        this.sessionRepository = sessionRepository;
+        this.dialogHandler = dialogHandler;
     }
 
     public void handleUpdate(Update update) {
@@ -29,6 +35,19 @@ public class CommandDispatcher {
                 .addKeyValue("username", username)
                 .addKeyValue("text", text)
                 .log("Получено сообщение");
+
+        if (sessionRepository.hasSession(chatId)) {
+            if (isInterruptingCommand(text)) {
+                sessionRepository.delete(chatId);
+                logger.atInfo()
+                    .addKeyValue("chatId", chatId)
+                    .log("Диалог /track прерван новой командой");
+            } else {
+                String response = dialogHandler.handle(chatId, text);
+                send(chatId, response);
+                return;
+            }
+        }
 
         if (!text.startsWith("/")) {
             logger.atWarn()
@@ -55,7 +74,7 @@ public class CommandDispatcher {
                                     .log("Выполняется команда");
 
                             try {
-                                String response = command.execute(username, args);
+                                String response = command.execute(username, chatId, args);
                                 bot.execute(new SendMessage(chatId, response));
                                 logger.atDebug()
                                         .addKeyValue("chatId", chatId)
@@ -69,6 +88,7 @@ public class CommandDispatcher {
                                         .addKeyValue("command", commandName)
                                         .setCause(e)
                                         .log("Ошибка при отправке сообщения для команды /" + command.getName());
+                                send(chatId, "Произошла ошибка. Попробуйте позже.");
                             }
                         },
                         () -> {
@@ -77,15 +97,24 @@ public class CommandDispatcher {
                                     .addKeyValue("username", username)
                                     .addKeyValue("command", commandName)
                                     .log("Неизвестная команда: отсутствует в репозитории");
-                            try {
-                                bot.execute(new SendMessage(chatId, "Неизвестная команда. Воспользуйтесь /help."));
-                            } catch (Exception e) {
-                                logger.atError()
-                                        .addKeyValue("chatId", chatId)
-                                        .addKeyValue("username", username)
-                                        .setCause(e)
-                                        .log("Не удалось отправить сообщение об неизвестной команде");
-                            }
+                            send(chatId, "Неизвестная команда. Воспользуйтесь /help.");
                         });
+    }
+
+    private boolean isInterruptingCommand(String text) {
+        return text.startsWith("/")
+            && !text.equals("/cancel")
+            && !text.equals("/skip");
+    }
+
+    private void send(Long chatId, String text) {
+        try {
+            bot.execute(new SendMessage(chatId, text));
+        } catch (Exception e) {
+            logger.atError()
+                .addKeyValue("chatId", chatId)
+                .setCause(e)
+                .log("Не удалось отправить сообщение");
+        }
     }
 }

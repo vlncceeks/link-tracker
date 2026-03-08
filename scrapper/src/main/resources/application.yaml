@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8082
 
 spring:
   application:
@@ -9,5 +9,14 @@ app:
   stackoverflow:
     key: ${STACKOVERFLOW_KEY} # Use env variable. DO NOT KEEP TOKEN HERE
     access-token: ${STACKOVERFLOW_ACCESS_KEY} # Use env variable. DO NOT KEEP TOKEN HERE
+    base-url: https://api.stackexchange.com/2.3
   github:
-    token: ${GITHUB_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
+    token: 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 # Use env variable. DO NOT KEEP TOKEN HERE
+    base-url: https://api.github.com
+
+bot:
+  base-url: http://localhost:8081
+
+scheduler:
+  interval: 60000
+

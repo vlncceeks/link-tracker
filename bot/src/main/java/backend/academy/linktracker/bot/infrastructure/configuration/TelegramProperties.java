@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.infrastructure.telegram;
+package backend.academy.linktracker.bot.infrastructure.configuration;
 
 import jakarta.validation.constraints.NotEmpty;
 import java.time.Duration;

@@ -1,4 +1,4 @@
-package backend.academy.linktracker.bot.infrastructure.telegram;
+package backend.academy.linktracker.bot.infrastructure.configuration;
 
 import com.pengrad.telegrambot.TelegramBot;
 import org.springframework.context.annotation.Bean;

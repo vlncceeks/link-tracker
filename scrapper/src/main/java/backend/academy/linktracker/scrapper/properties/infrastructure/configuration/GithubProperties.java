@@ -1,4 +1,4 @@
-package backend.academy.linktracker.scrapper.properties;
+package backend.academy.linktracker.scrapper.properties.infrastructure.configuration;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.EqualsAndHashCode;
@@ -8,17 +8,17 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
-@ConfigurationProperties(prefix = "app.stackoverflow")
+@ConfigurationProperties(prefix = "app.github")
 @Validated
 @Getter
 @Setter
 @EqualsAndHashCode
 @NoArgsConstructor
-public class StackoverflowProperties {
+public class GithubProperties {
 
     @NotEmpty
-    private String key;
+    private String token;
 
     @NotEmpty
-    private String accessToken;
+    private String baseUrl;
 }
