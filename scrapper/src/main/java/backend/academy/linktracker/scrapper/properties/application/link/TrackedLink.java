@@ -1,11 +1,11 @@
 package backend.academy.linktracker.scrapper.properties.application.link;
 
-import lombok.Getter;
-import lombok.Setter;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class TrackedLink {
@@ -13,6 +13,7 @@ public class TrackedLink {
     private final String url;
     private final Set<String> tags;
     private final Set<String> filters;
+
     @Setter
     private Instant lastCheckedAt;
 

@@ -2,12 +2,11 @@ package backend.academy.linktracker.bot.infrastructure.registry;
 
 import backend.academy.linktracker.bot.application.command.Command;
 import backend.academy.linktracker.bot.application.command.CommandRepository;
-import org.springframework.stereotype.Repository;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class InMemoryCommandRepository implements CommandRepository {

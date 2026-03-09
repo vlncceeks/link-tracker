@@ -5,11 +5,11 @@ import backend.academy.linktracker.scrapper.properties.application.exception.Cha
 import backend.academy.linktracker.scrapper.properties.application.exception.ChatNotFoundException;
 import backend.academy.linktracker.scrapper.properties.application.exception.LinkAlreadyTrackedException;
 import backend.academy.linktracker.scrapper.properties.application.exception.LinkNotFoundException;
+import java.util.Arrays;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import java.util.Arrays;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -40,9 +40,12 @@ public class GlobalExceptionHandler {
 
     private ApiErrorResponse error(String code, Exception e) {
         return new ApiErrorResponse(
-            e.getMessage(), code,
-            e.getClass().getName(), e.getMessage(),
-            Arrays.stream(e.getStackTrace()).map(StackTraceElement::toString).toList()
-        );
+                e.getMessage(),
+                code,
+                e.getClass().getName(),
+                e.getMessage(),
+                Arrays.stream(e.getStackTrace())
+                        .map(StackTraceElement::toString)
+                        .toList());
     }
 }

@@ -7,8 +7,12 @@ import backend.academy.linktracker.bot.application.dto.response.ListLinksRespons
 
 public interface ScrapperClient {
     void registerChat(Long chatId);
+
     void deleteChat(Long chatId);
+
     ListLinksResponse getLinks(Long chatId);
+
     LinkResponse addLink(Long chatId, AddLinkRequest request);
+
     LinkResponse removeLink(Long chatId, RemoveLinkRequest request);
 }

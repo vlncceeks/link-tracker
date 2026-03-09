@@ -3,25 +3,24 @@ package backend.academy.linktracker.bot.application.state;
 import backend.academy.linktracker.bot.application.client.ScrapperClient;
 import backend.academy.linktracker.bot.application.dto.request.AddLinkRequest;
 import backend.academy.linktracker.bot.application.exception.ScrapperClientException;
+import java.util.Arrays;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import java.util.Arrays;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class TrackDialogHandler {
-    private static final Logger logger =
-        LoggerFactory.getLogger(TrackDialogHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(TrackDialogHandler.class);
 
     private final TrackSessionRepository sessionRepository;
     private final ScrapperClient scrapperClient;
 
     public String handle(Long chatId, String text) {
-        TrackSession session = sessionRepository.find(chatId)
-            .orElseThrow(() -> new IllegalStateException("Сессия не найдена"));
+        TrackSession session =
+                sessionRepository.find(chatId).orElseThrow(() -> new IllegalStateException("Сессия не найдена"));
 
         if (text.equals("/cancel")) {
             sessionRepository.delete(chatId);
@@ -44,50 +43,43 @@ public class TrackDialogHandler {
         session.setState(TrackState.WAITING_FOR_TAGS);
         sessionRepository.save(chatId, session);
 
-        logger.atDebug()
-            .addKeyValue("chatId", chatId)
-            .addKeyValue("url", text)
-            .log("URL получен, ожидаем теги");
+        logger.atDebug().addKeyValue("chatId", chatId).addKeyValue("url", text).log("URL получен, ожидаем теги");
 
         return "Введите теги или нажмите /skip:";
     }
 
     private String handleTags(Long chatId, String text, TrackSession session) {
         List<String> tags = text.equals("/skip")
-            ? List.of()
-            : Arrays.stream(text.split(","))
-            .map(String::trim)
-            .filter(t -> !t.isBlank())
-            .toList();
+                ? List.of()
+                : Arrays.stream(text.split(","))
+                        .map(String::trim)
+                        .filter(t -> !t.isBlank())
+                        .toList();
 
         try {
-            scrapperClient.addLink(chatId,
-                new AddLinkRequest(session.getUrl(), tags, List.of()));
+            scrapperClient.addLink(chatId, new AddLinkRequest(session.getUrl(), tags, List.of()));
 
             logger.atInfo()
-                .addKeyValue("chatId", chatId)
-                .addKeyValue("url", session.getUrl())
-                .addKeyValue("tags", tags)
-                .log("Ссылка добавлена через диалог /track");
+                    .addKeyValue("chatId", chatId)
+                    .addKeyValue("url", session.getUrl())
+                    .addKeyValue("tags", tags)
+                    .log("Ссылка добавлена через диалог /track");
 
             return "Ссылка добавлена для отслеживания: " + session.getUrl()
-                + (tags.isEmpty() ? "" : "\nТеги: " + String.join(", ", tags));
+                    + (tags.isEmpty() ? "" : "\nТеги: " + String.join(", ", tags));
 
         } catch (ScrapperClientException e) {
             logger.atWarn()
-                .addKeyValue("chatId", chatId)
-                .addKeyValue("url", session.getUrl())
-                .log("Ошибка при добавлении ссылки");
+                    .addKeyValue("chatId", chatId)
+                    .addKeyValue("url", session.getUrl())
+                    .log("Ошибка при добавлении ссылки");
             return "Ошибка при добавлении ссылки: " + e.getMessage();
         } finally {
             sessionRepository.delete(chatId);
         }
     }
 
-
     private boolean isValidUrl(String text) {
-        return text.startsWith("https://github.com/")
-            || text.startsWith("https://stackoverflow.com/questions/");
+        return text.startsWith("https://github.com/") || text.startsWith("https://stackoverflow.com/questions/");
     }
-
 }

@@ -16,7 +16,11 @@ public class CommandDispatcher {
     private final TrackSessionRepository sessionRepository;
     private final TrackDialogHandler dialogHandler;
 
-    public CommandDispatcher(CommandRepository repository, TelegramBot bot, TrackSessionRepository sessionRepository, TrackDialogHandler dialogHandler) {
+    public CommandDispatcher(
+            CommandRepository repository,
+            TelegramBot bot,
+            TrackSessionRepository sessionRepository,
+            TrackDialogHandler dialogHandler) {
         this.repository = repository;
         this.bot = bot;
         this.sessionRepository = sessionRepository;
@@ -39,9 +43,7 @@ public class CommandDispatcher {
         if (sessionRepository.hasSession(chatId)) {
             if (isInterruptingCommand(text)) {
                 sessionRepository.delete(chatId);
-                logger.atInfo()
-                    .addKeyValue("chatId", chatId)
-                    .log("Диалог /track прерван новой командой");
+                logger.atInfo().addKeyValue("chatId", chatId).log("Диалог /track прерван новой командой");
             } else {
                 String response = dialogHandler.handle(chatId, text);
                 send(chatId, response);
@@ -102,19 +104,14 @@ public class CommandDispatcher {
     }
 
     private boolean isInterruptingCommand(String text) {
-        return text.startsWith("/")
-            && !text.equals("/cancel")
-            && !text.equals("/skip");
+        return text.startsWith("/") && !text.equals("/cancel") && !text.equals("/skip");
     }
 
     private void send(Long chatId, String text) {
         try {
             bot.execute(new SendMessage(chatId, text));
         } catch (Exception e) {
-            logger.atError()
-                .addKeyValue("chatId", chatId)
-                .setCause(e)
-                .log("Не удалось отправить сообщение");
+            logger.atError().addKeyValue("chatId", chatId).setCause(e).log("Не удалось отправить сообщение");
         }
     }
 }

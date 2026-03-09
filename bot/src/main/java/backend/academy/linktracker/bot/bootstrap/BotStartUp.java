@@ -18,8 +18,12 @@ public class BotStartUp {
     private final TrackDialogHandler trackDialogHandler;
     private final ScrapperClient scrapperClient;
 
-    public BotStartUp(CommandRepository commandRepository, TelegramBot bot, TrackSessionRepository trackSessionRepository,
-                      TrackDialogHandler trackDialogHandler, ScrapperClient scrapperClient) {
+    public BotStartUp(
+            CommandRepository commandRepository,
+            TelegramBot bot,
+            TrackSessionRepository trackSessionRepository,
+            TrackDialogHandler trackDialogHandler,
+            ScrapperClient scrapperClient) {
         this.commandRepository = commandRepository;
         this.bot = bot;
         this.trackSessionRepository = trackSessionRepository;

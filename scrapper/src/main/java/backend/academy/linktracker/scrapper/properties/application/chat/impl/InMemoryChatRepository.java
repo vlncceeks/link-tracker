@@ -5,13 +5,13 @@ import backend.academy.linktracker.scrapper.properties.application.exception.Cha
 import backend.academy.linktracker.scrapper.properties.application.exception.ChatNotFoundException;
 import backend.academy.linktracker.scrapper.properties.application.exception.LinkNotFoundException;
 import backend.academy.linktracker.scrapper.properties.application.link.TrackedLink;
-import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class InMemoryChatRepository implements ChatRepository {
@@ -61,11 +61,9 @@ public class InMemoryChatRepository implements ChatRepository {
     @Override
     public Map<String, List<Long>> getAllLinksWithChats() {
         Map<String, List<Long>> result = new HashMap<>();
-        storage.forEach((chatId, links) ->
-            links.keySet().forEach(url ->
-                result.computeIfAbsent(url, k -> new ArrayList<>()).add(chatId)
-            )
-        );
+        storage.forEach(
+                (chatId, links) -> links.keySet().forEach(url -> result.computeIfAbsent(url, k -> new ArrayList<>())
+                        .add(chatId)));
         return result;
     }
 

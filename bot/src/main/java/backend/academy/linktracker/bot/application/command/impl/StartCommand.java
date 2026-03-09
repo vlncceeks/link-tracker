@@ -23,8 +23,7 @@ public class StartCommand implements Command {
         try {
             scrapperClient.registerChat(chatId);
         } catch (Exception e) {
-            logger.atWarn().addKeyValue("chatId", chatId)
-                .log(e.getMessage());
+            logger.atWarn().addKeyValue("chatId", chatId).log(e.getMessage());
         }
         String message = "Добро пожаловать, " + username + "! Используйте /help, чтобы посмотреть доступные команды.";
         return message;

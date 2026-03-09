@@ -6,9 +6,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import backend.academy.linktracker.bot.application.client.ScrapperClient;
 import backend.academy.linktracker.bot.application.command.CommandDispatcher;
 import backend.academy.linktracker.bot.application.command.impl.HelpCommand;
 import backend.academy.linktracker.bot.application.command.impl.StartCommand;
+import backend.academy.linktracker.bot.application.state.TrackDialogHandler;
+import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
 import backend.academy.linktracker.bot.infrastructure.registry.InMemoryCommandRepository;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
@@ -18,13 +21,21 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class TelegramBotCommandsTest {
 
-    private TelegramBot bot;
+    @Mock
+    private ScrapperClient scrapperClient;
+
+    @Mock
+    private TrackSessionRepository sessionRepository;
+
     private CommandDispatcher dispatcher;
+    private TrackDialogHandler handler;
+    private TelegramBot bot;
 
     @Captor
     ArgumentCaptor<SendMessage> captor = ArgumentCaptor.forClass(SendMessage.class);
@@ -34,10 +45,11 @@ class TelegramBotCommandsTest {
         bot = mock(TelegramBot.class);
 
         InMemoryCommandRepository repository = new InMemoryCommandRepository();
-        repository.addCommand(new StartCommand());
-        repository.addCommand(new HelpCommand(repository));
+        handler = new TrackDialogHandler(sessionRepository, scrapperClient);
+        repository.addCommand(new StartCommand(scrapperClient));
+        repository.addCommand(new HelpCommand(repository, scrapperClient));
 
-        dispatcher = new CommandDispatcher(repository, bot);
+        dispatcher = new CommandDispatcher(repository, bot, sessionRepository, handler);
     }
 
     @Test

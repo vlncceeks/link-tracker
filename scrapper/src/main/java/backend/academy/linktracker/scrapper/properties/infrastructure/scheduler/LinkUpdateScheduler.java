@@ -5,21 +5,20 @@ import backend.academy.linktracker.scrapper.properties.application.client.BotCli
 import backend.academy.linktracker.scrapper.properties.application.dto.request.LinkUpdateRequest;
 import backend.academy.linktracker.scrapper.properties.application.link.TrackedLink;
 import backend.academy.linktracker.scrapper.properties.application.service.LinkUpdateChecker;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class LinkUpdateScheduler {
 
-    private static final Logger logger =
-        LoggerFactory.getLogger(LinkUpdateScheduler.class);
+    private static final Logger logger = LoggerFactory.getLogger(LinkUpdateScheduler.class);
 
     private final ChatRepository chatRepository;
     private final BotClient botClient;
@@ -38,48 +37,36 @@ public class LinkUpdateScheduler {
         allLinks.forEach((url, chatIds) -> {
             logger.atInfo().log("allLinks test");
             Long firstChatId = chatIds.getFirst();
-            chatRepository.findLink(firstChatId, url).ifPresentOrElse(link ->
-                findChecker(url).ifPresentOrElse(
-                    checker -> processLink(checker, link, chatIds),
-                    () -> logger.atWarn()
-                        .addKeyValue("url", url)
-                        .log("Нет подходящего чекера для ссылки")
-                ),
-                () -> logger.atWarn().log("Link not found")
-            );
+            chatRepository
+                    .findLink(firstChatId, url)
+                    .ifPresentOrElse(
+                            link -> findChecker(url)
+                                    .ifPresentOrElse(
+                                            checker -> processLink(checker, link, chatIds), () -> logger.atWarn()
+                                                    .addKeyValue("url", url)
+                                                    .log("Нет подходящего чекера для ссылки")),
+                            () -> logger.atWarn().log("Link not found"));
         });
 
         logger.atInfo().log("Check updates finished");
     }
 
     private Optional<LinkUpdateChecker> findChecker(String url) {
-        return checkers.stream()
-            .filter(c -> c.supports(url))
-            .findFirst();
+        return checkers.stream().filter(c -> c.supports(url)).findFirst();
     }
 
-    private void processLink(LinkUpdateChecker checker,
-                             TrackedLink link,
-                             List<Long> chatIds) {
+    private void processLink(LinkUpdateChecker checker, TrackedLink link, List<Long> chatIds) {
         try {
             checker.check(link).ifPresent(description -> {
                 logger.atInfo()
-                    .addKeyValue("url", link.getUrl())
-                    .addKeyValue("chatCount", chatIds.size())
-                    .log("Find update, send notification");
+                        .addKeyValue("url", link.getUrl())
+                        .addKeyValue("chatCount", chatIds.size())
+                        .log("Find update, send notification");
 
-                botClient.sendUpdate(new LinkUpdateRequest(
-                    link.getId(),
-                    link.getUrl(),
-                    description,
-                    chatIds
-                ));
+                botClient.sendUpdate(new LinkUpdateRequest(link.getId(), link.getUrl(), description, chatIds));
             });
         } catch (Exception e) {
-            logger.atError()
-                .addKeyValue("url", link.getUrl())
-                .setCause(e)
-                .log("Ошибка при проверке ссылки");
+            logger.atError().addKeyValue("url", link.getUrl()).setCause(e).log("Ошибка при проверке ссылки");
         }
     }
 }

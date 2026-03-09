@@ -4,18 +4,17 @@ import backend.academy.linktracker.scrapper.properties.application.client.GitHub
 import backend.academy.linktracker.scrapper.properties.application.client.impl.GitHubClientImpl;
 import backend.academy.linktracker.scrapper.properties.application.link.TrackedLink;
 import backend.academy.linktracker.scrapper.properties.application.service.LinkUpdateChecker;
+import java.time.Instant;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import java.time.Instant;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
-    private static final Logger logger =
-        LoggerFactory.getLogger(GitHubLinkUpdateChecker.class);
+    private static final Logger logger = LoggerFactory.getLogger(GitHubLinkUpdateChecker.class);
 
     private final GitHubClient gitHubClient;
 
@@ -27,21 +26,21 @@ public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
     @Override
     public Optional<String> check(TrackedLink link) {
         return GitHubClientImpl.parseUrl(link.getUrl())
-            .flatMap(parts -> gitHubClient.fetchRepository(parts[0], parts[1]))
-            .flatMap(response -> {
-                Instant remoteUpdatedAt = response.pushedAt();
+                .flatMap(parts -> gitHubClient.fetchRepository(parts[0], parts[1]))
+                .flatMap(response -> {
+                    Instant remoteUpdatedAt = response.pushedAt();
 
-                logger.atDebug()
-                    .addKeyValue("url", link.getUrl())
-                    .addKeyValue("pushedAt", remoteUpdatedAt)
-                    .addKeyValue("lastCheckedAt", link.getLastCheckedAt())
-                    .log("Проверка GitHub репозитория");
+                    logger.atDebug()
+                            .addKeyValue("url", link.getUrl())
+                            .addKeyValue("pushedAt", remoteUpdatedAt)
+                            .addKeyValue("lastCheckedAt", link.getLastCheckedAt())
+                            .log("Проверка GitHub репозитория");
 
-                if (remoteUpdatedAt.isAfter(link.getLastCheckedAt())) {
-                    link.setLastCheckedAt(Instant.now());
-                    return Optional.of("Новый коммит в репозитории " + link.getUrl());
-                }
-                return Optional.empty();
-            });
+                    if (remoteUpdatedAt.isAfter(link.getLastCheckedAt())) {
+                        link.setLastCheckedAt(Instant.now());
+                        return Optional.of("Новый коммит в репозитории " + link.getUrl());
+                    }
+                    return Optional.empty();
+                });
     }
 }

@@ -5,5 +5,6 @@ import java.util.Optional;
 
 public interface LinkUpdateChecker {
     Optional<String> check(TrackedLink link);
+
     boolean supports(String url);
 }

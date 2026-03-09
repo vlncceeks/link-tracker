@@ -23,12 +23,12 @@ public class UpdateController {
     @PostMapping("/updates")
     public ResponseEntity<Void> receiveUpdate(@RequestBody @Valid LinkUpdateRequest request) {
         logger.atInfo()
-            .addKeyValue("url", request.url())
-            .addKeyValue("chatCount", request.tgChatIds().size())
-            .log("Получено обновление ссылки");
+                .addKeyValue("url", request.url())
+                .addKeyValue("chatCount", request.tgChatIds().size())
+                .log("Получено обновление ссылки");
 
         String message = "Обновление по ссылке: " + request.url()
-            + (request.description() != null ? "\n" + request.description() : "");
+                + (request.description() != null ? "\n" + request.description() : "");
 
         for (Long chatId : request.tgChatIds()) {
             bot.execute(new SendMessage(chatId, message));

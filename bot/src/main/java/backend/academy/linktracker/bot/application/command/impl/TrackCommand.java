@@ -10,6 +10,7 @@ public class TrackCommand implements Command {
     public TrackCommand(TrackSessionRepository sessionRepository) {
         this.sessionRepository = sessionRepository;
     }
+
     @Override
     public String getName() {
         return "track";

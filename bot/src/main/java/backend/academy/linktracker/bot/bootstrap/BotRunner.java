@@ -18,15 +18,20 @@ import org.slf4j.LoggerFactory;
 public class BotRunner {
     private static final Logger logger = LoggerFactory.getLogger(BotRunner.class);
 
-    public static void run(CommandRepository commandRepository, TelegramBot bot, TrackSessionRepository trackSessionRepository,
-                           TrackDialogHandler trackDialogHandler, ScrapperClient scrapperClient) {
+    public static void run(
+            CommandRepository commandRepository,
+            TelegramBot bot,
+            TrackSessionRepository trackSessionRepository,
+            TrackDialogHandler trackDialogHandler,
+            ScrapperClient scrapperClient) {
         commandRepository.addCommand(new StartCommand(scrapperClient));
         commandRepository.addCommand(new HelpCommand(commandRepository, scrapperClient));
         commandRepository.addCommand(new ListCommand(scrapperClient));
         commandRepository.addCommand(new TrackCommand(trackSessionRepository));
         commandRepository.addCommand(new UntrackCommand(scrapperClient));
 
-        CommandDispatcher dispatcher = new CommandDispatcher(commandRepository, bot, trackSessionRepository, trackDialogHandler);
+        CommandDispatcher dispatcher =
+                new CommandDispatcher(commandRepository, bot, trackSessionRepository, trackDialogHandler);
         logger.atInfo().log("Команды и диспетчер инициализированы");
 
         BotCommandsSetup.setupCommands(bot);

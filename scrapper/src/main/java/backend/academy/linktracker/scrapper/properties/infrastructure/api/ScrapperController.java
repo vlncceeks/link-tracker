@@ -8,6 +8,8 @@ import backend.academy.linktracker.scrapper.properties.application.dto.response.
 import backend.academy.linktracker.scrapper.properties.application.exception.LinkAlreadyTrackedException;
 import backend.academy.linktracker.scrapper.properties.application.exception.LinkNotFoundException;
 import backend.academy.linktracker.scrapper.properties.application.link.TrackedLink;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,59 +45,49 @@ public class ScrapperController {
     @GetMapping("/links")
     public ResponseEntity<ListLinksResponse> getLinks(@RequestHeader("Tg-Chat-Id") Long chatId) {
         List<LinkResponse> links = chatRepository.getLinks(chatId).stream()
-            .map(l -> new LinkResponse(
-                    l.getId(),
-                    l.getUrl(),
-                    new ArrayList<>(l.getTags()),
-                    new ArrayList<>(l.getFilters())
-                )
-            ).toList();
+                .map(l -> new LinkResponse(
+                        l.getId(), l.getUrl(), new ArrayList<>(l.getTags()), new ArrayList<>(l.getFilters())))
+                .toList();
         return ResponseEntity.ok(new ListLinksResponse(links, links.size()));
     }
 
     @PostMapping("/links")
     public ResponseEntity<LinkResponse> addLink(
-        @RequestHeader("Tg-Chat-Id") Long chatId,
-        @RequestBody AddLinkRequest request) {
+            @RequestHeader("Tg-Chat-Id") Long chatId, @RequestBody AddLinkRequest request) {
 
         if (chatRepository.findLink(chatId, request.url()).isPresent()) {
             throw new LinkAlreadyTrackedException(request.url());
         }
 
         TrackedLink link = new TrackedLink(
-            chatRepository.nextId(), request.url(),
-            request.tags(), request.filters()
-        );
+                chatRepository.nextId(), request.url(),
+                request.tags(), request.filters());
         chatRepository.addLink(chatId, link);
 
         logger.atInfo()
-            .addKeyValue("chatId", chatId)
-            .addKeyValue("url", request.url())
-            .log("Ссылка добавлена");
+                .addKeyValue("chatId", chatId)
+                .addKeyValue("url", request.url())
+                .log("Ссылка добавлена");
 
-        return ResponseEntity.ok(
-            new LinkResponse(link.getId(), link.getUrl(),
-                new ArrayList<>(link.getTags()), new ArrayList<>(link.getFilters()))
-        );
+        return ResponseEntity.ok(new LinkResponse(
+                link.getId(), link.getUrl(), new ArrayList<>(link.getTags()), new ArrayList<>(link.getFilters())));
     }
 
     @DeleteMapping("/links")
     public ResponseEntity<LinkResponse> removeLink(
-        @RequestHeader("Tg-Chat-Id") Long chatId,
-        @RequestBody RemoveLinkRequest request) {
+            @RequestHeader("Tg-Chat-Id") Long chatId, @RequestBody RemoveLinkRequest request) {
 
-        TrackedLink link = chatRepository.findLink(chatId, request.url())
-            .orElseThrow(() -> new LinkNotFoundException(request.url()));
+        TrackedLink link = chatRepository
+                .findLink(chatId, request.url())
+                .orElseThrow(() -> new LinkNotFoundException(request.url()));
         chatRepository.removeLink(chatId, request.url());
 
         logger.atInfo()
-            .addKeyValue("chatId", chatId)
-            .addKeyValue("url", request.url())
-            .log("Ссылка удалена");
+                .addKeyValue("chatId", chatId)
+                .addKeyValue("url", request.url())
+                .log("Ссылка удалена");
 
-        return ResponseEntity.ok(
-            new LinkResponse(link.getId(), link.getUrl(),
-                new ArrayList<>(link.getTags()), new ArrayList<>(link.getFilters()))
-        );
+        return ResponseEntity.ok(new LinkResponse(
+                link.getId(), link.getUrl(), new ArrayList<>(link.getTags()), new ArrayList<>(link.getFilters())));
     }
 }
