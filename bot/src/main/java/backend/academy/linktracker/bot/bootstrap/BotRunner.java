@@ -25,7 +25,7 @@ public class BotRunner {
             TrackDialogHandler trackDialogHandler,
             ScrapperClient scrapperClient) {
         commandRepository.addCommand(new StartCommand(scrapperClient));
-        commandRepository.addCommand(new HelpCommand(commandRepository, scrapperClient));
+        commandRepository.addCommand(new HelpCommand(commandRepository));
         commandRepository.addCommand(new ListCommand(scrapperClient));
         commandRepository.addCommand(new TrackCommand(trackSessionRepository));
         commandRepository.addCommand(new UntrackCommand(scrapperClient));

@@ -47,7 +47,7 @@ class TelegramBotCommandsTest {
         InMemoryCommandRepository repository = new InMemoryCommandRepository();
         handler = new TrackDialogHandler(sessionRepository, scrapperClient);
         repository.addCommand(new StartCommand(scrapperClient));
-        repository.addCommand(new HelpCommand(repository, scrapperClient));
+        repository.addCommand(new HelpCommand(repository));
 
         dispatcher = new CommandDispatcher(repository, bot, sessionRepository, handler);
     }

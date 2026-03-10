@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 @Component
@@ -40,6 +41,12 @@ public class StackOverflowClientImpl implements StackOverflowClient {
                     .addKeyValue("questionId", questionId)
                     .addKeyValue("status", e.getStatusCode())
                     .log("StackOverflow API вернул ошибку");
+            return Optional.empty();
+        } catch (RestClientException e) {
+            logger.atWarn()
+                    .addKeyValue("questionId", questionId)
+                    .addKeyValue("error", e.getMessage())
+                    .log("Ошибка при обработке ответа StackOverflow");
             return Optional.empty();
         }
     }

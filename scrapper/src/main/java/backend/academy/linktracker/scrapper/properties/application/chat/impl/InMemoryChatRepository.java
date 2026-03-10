@@ -75,4 +75,9 @@ public class InMemoryChatRepository implements ChatRepository {
         if (!storage.containsKey(chatId)) throw new ChatNotFoundException(chatId);
         return storage.get(chatId);
     }
+
+    public void clear() {
+        storage.clear();
+        idCounter.set(1);
+    }
 }

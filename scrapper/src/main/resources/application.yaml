@@ -11,7 +11,7 @@ app:
     access-token: ${STACKOVERFLOW_ACCESS_KEY} # Use env variable. DO NOT KEEP TOKEN HERE
     base-url: https://api.stackexchange.com/2.3
   github:
-    token: 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 # Use env variable. DO NOT KEEP TOKEN HERE
+    token: ${GITHUB_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
     base-url: https://api.github.com
 
 bot:

@@ -1,16 +1,13 @@
 package backend.academy.linktracker.bot.application.command.impl;
 
-import backend.academy.linktracker.bot.application.client.ScrapperClient;
 import backend.academy.linktracker.bot.application.command.Command;
 import backend.academy.linktracker.bot.application.command.CommandRepository;
 
 public class HelpCommand implements Command {
     private final CommandRepository repository;
-    private final ScrapperClient scrapperClient;
 
-    public HelpCommand(CommandRepository repository, ScrapperClient scrapperClient) {
+    public HelpCommand(CommandRepository repository) {
         this.repository = repository;
-        this.scrapperClient = scrapperClient;
     }
 
     @Override

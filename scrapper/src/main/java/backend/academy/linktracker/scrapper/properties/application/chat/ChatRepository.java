@@ -23,4 +23,6 @@ public interface ChatRepository {
     Map<String, List<Long>> getAllLinksWithChats();
 
     Integer nextId();
+
+    void clear();
 }

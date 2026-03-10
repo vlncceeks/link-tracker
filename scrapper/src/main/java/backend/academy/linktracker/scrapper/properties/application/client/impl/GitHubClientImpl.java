@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 @Component
@@ -45,6 +46,13 @@ public class GitHubClientImpl implements GitHubClient {
                     .addKeyValue("repo", repo)
                     .addKeyValue("status", e.getStatusCode())
                     .log("Github API вернул ошибку");
+            return Optional.empty();
+        } catch (RestClientException e) {
+            logger.atWarn()
+                    .addKeyValue("owner", owner)
+                    .addKeyValue("repo", repo)
+                    .addKeyValue("error", e.getMessage())
+                    .log("Ошибка при обработке ответа GitHub");
             return Optional.empty();
         }
     }
