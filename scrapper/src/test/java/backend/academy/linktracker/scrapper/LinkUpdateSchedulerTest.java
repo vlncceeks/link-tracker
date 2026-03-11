@@ -7,12 +7,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import backend.academy.linktracker.scrapper.properties.application.chat.ChatRepository;
-import backend.academy.linktracker.scrapper.properties.application.client.BotClient;
-import backend.academy.linktracker.scrapper.properties.application.dto.request.LinkUpdateRequest;
-import backend.academy.linktracker.scrapper.properties.application.link.TrackedLink;
-import backend.academy.linktracker.scrapper.properties.application.service.LinkUpdateChecker;
-import backend.academy.linktracker.scrapper.properties.infrastructure.scheduler.LinkUpdateScheduler;
+import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
+import backend.academy.linktracker.scrapper.application.client.BotClient;
+import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
+import backend.academy.linktracker.scrapper.application.link.TrackedLink;
+import backend.academy.linktracker.scrapper.application.service.LinkUpdateChecker;
+import backend.academy.linktracker.scrapper.infrastructure.scheduler.LinkUpdateScheduler;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;

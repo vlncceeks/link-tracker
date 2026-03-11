@@ -3,7 +3,9 @@ package backend.academy.linktracker.bot.application.command.impl;
 import backend.academy.linktracker.bot.application.command.Command;
 import backend.academy.linktracker.bot.application.state.TrackSession;
 import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TrackCommand implements Command {
     private final TrackSessionRepository sessionRepository;
 
@@ -14,6 +16,11 @@ public class TrackCommand implements Command {
     @Override
     public String getName() {
         return "track";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Начать отслеживание ссылки";
     }
 
     @Override

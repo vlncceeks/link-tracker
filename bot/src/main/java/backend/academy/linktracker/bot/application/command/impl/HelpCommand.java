@@ -2,7 +2,9 @@ package backend.academy.linktracker.bot.application.command.impl;
 
 import backend.academy.linktracker.bot.application.command.Command;
 import backend.academy.linktracker.bot.application.command.CommandRepository;
+import org.springframework.stereotype.Component;
 
+@Component
 public class HelpCommand implements Command {
     private final CommandRepository repository;
 
@@ -13,6 +15,11 @@ public class HelpCommand implements Command {
     @Override
     public String getName() {
         return "help";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Показать список команд";
     }
 
     @Override

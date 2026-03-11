@@ -4,7 +4,9 @@ import backend.academy.linktracker.bot.application.client.ScrapperClient;
 import backend.academy.linktracker.bot.application.command.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class StartCommand implements Command {
     private final ScrapperClient scrapperClient;
     private static final Logger logger = LoggerFactory.getLogger(StartCommand.class);
@@ -16,6 +18,11 @@ public class StartCommand implements Command {
     @Override
     public String getName() {
         return "start";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Начать работу с ботом";
     }
 
     @Override

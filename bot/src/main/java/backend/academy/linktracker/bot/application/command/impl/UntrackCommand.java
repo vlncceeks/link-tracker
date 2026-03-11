@@ -4,7 +4,9 @@ import backend.academy.linktracker.bot.application.client.ScrapperClient;
 import backend.academy.linktracker.bot.application.command.Command;
 import backend.academy.linktracker.bot.application.dto.request.RemoveLinkRequest;
 import backend.academy.linktracker.bot.application.dto.response.LinkResponse;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UntrackCommand implements Command {
     private final ScrapperClient scrapperClient;
 
@@ -15,6 +17,11 @@ public class UntrackCommand implements Command {
     @Override
     public String getName() {
         return "untrack";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Прекратить отслеживание ссылки";
     }
 
     @Override

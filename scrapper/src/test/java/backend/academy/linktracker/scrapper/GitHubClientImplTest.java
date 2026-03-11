@@ -6,9 +6,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import backend.academy.linktracker.scrapper.properties.application.client.impl.GitHubClientImpl;
-import backend.academy.linktracker.scrapper.properties.application.dto.response.GitHubRepositoryResponse;
-import backend.academy.linktracker.scrapper.properties.infrastructure.configuration.GithubProperties;
+import backend.academy.linktracker.scrapper.application.client.impl.GitHubClientImpl;
+import backend.academy.linktracker.scrapper.application.dto.response.GitHubRepositoryResponse;
+import backend.academy.linktracker.scrapper.infrastructure.configuration.GithubProperties;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;

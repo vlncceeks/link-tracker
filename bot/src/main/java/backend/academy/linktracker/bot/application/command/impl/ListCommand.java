@@ -6,7 +6,9 @@ import backend.academy.linktracker.bot.application.dto.response.ListLinksRespons
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ListCommand implements Command {
     private final ScrapperClient scrapperClient;
     private static final Logger logger = LoggerFactory.getLogger(ListCommand.class);
@@ -18,6 +20,11 @@ public class ListCommand implements Command {
     @Override
     public String getName() {
         return "list";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Вывести список всех ссылок, отслеживаемых пользователем";
     }
 
     @Override
