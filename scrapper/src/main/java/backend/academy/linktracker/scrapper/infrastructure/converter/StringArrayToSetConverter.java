@@ -1,10 +1,10 @@
 package backend.academy.linktracker.scrapper.infrastructure.converter;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.ReadingConverter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.ReadingConverter;
 
 @ReadingConverter
 public class StringArrayToSetConverter implements Converter<String[], Set<String>> {

@@ -3,7 +3,6 @@ package backend.academy.linktracker.scrapper.application.chat.impl.orm;
 import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import lombok.RequiredArgsConstructor;
 
-
 @RequiredArgsConstructor
 public class OrmChatRepository implements ChatRepository {
     private final ChatSpringRepository repository;

@@ -1,8 +1,6 @@
 package backend.academy.linktracker.scrapper.application.link;
 
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,12 +9,14 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
-@Table("tracked_links ")
+@Table("tracked_links")
 public class TrackedLink {
     @Id
     private final Integer id;
+
     @Column("chat_id")
     private final Long chatId;
+
     private final String url;
     private final Set<String> tags;
     private final Set<String> filters;

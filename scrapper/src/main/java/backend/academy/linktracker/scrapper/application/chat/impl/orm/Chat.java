@@ -4,4 +4,4 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table("chats")
-public record Chat (@Id Long id) {}
+public record Chat(@Id Long id) {}

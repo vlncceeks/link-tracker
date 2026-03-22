@@ -2,13 +2,13 @@ package backend.academy.linktracker.scrapper.application.link.impl.orm;
 
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
-import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Transactional
@@ -17,8 +17,7 @@ public class OrmLinkRepository implements LinkRepository {
 
     @Override
     public TrackedLink add(Long chatId, TrackedLink link) {
-        TrackedLink toSave = new TrackedLink(
-            null, chatId, link.getUrl(), link.getTags(), link.getFilters());
+        TrackedLink toSave = new TrackedLink(null, chatId, link.getUrl(), link.getTags(), link.getFilters());
         return repository.save(toSave);
     }
 
@@ -40,8 +39,7 @@ public class OrmLinkRepository implements LinkRepository {
     @Override
     public Map<String, List<Long>> getAllLinksWithChats() {
         Map<String, List<Long>> result = new HashMap<>();
-        repository.findAll().forEach(link ->
-            result.computeIfAbsent(link.getUrl(), k -> new ArrayList<>())
+        repository.findAll().forEach(link -> result.computeIfAbsent(link.getUrl(), k -> new ArrayList<>())
                 .add(link.getChatId()));
         return result;
     }

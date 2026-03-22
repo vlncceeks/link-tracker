@@ -6,8 +6,12 @@ import java.util.Optional;
 
 public interface LinkRepository {
     TrackedLink add(Long chatId, TrackedLink link);
+
     void remove(Long chatId, String url);
+
     Optional<TrackedLink> find(Long chatId, String url);
+
     List<TrackedLink> findAll(Long chatId);
+
     Map<String, List<Long>> getAllLinksWithChats();
 }

@@ -8,9 +8,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import backend.academy.linktracker.scrapper.application.chat.impl.memory.InMemoryChatRepository;
+import backend.academy.linktracker.scrapper.application.Clearable;
+import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import backend.academy.linktracker.scrapper.application.dto.request.AddLinkRequest;
 import backend.academy.linktracker.scrapper.application.dto.request.RemoveLinkRequest;
+import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,24 +21,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestPropertySource(
+        properties = {
+            "app.access-type=MEMORY",
+            "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration,org.springframework.boot.liquibase.autoconfigure.LiquibaseAutoConfiguration"
+        })
 class ScrapperControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private InMemoryChatRepository chatRepository;
+    private ChatRepository chatRepository;
+
+    @Autowired
+    private LinkRepository linkRepository;
 
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        chatRepository.clear();
+        if (chatRepository instanceof Clearable c) c.clear();
+        if (linkRepository instanceof Clearable c) c.clear();
     }
 
     private static final String TEST_URL = "https://github.com/user/repo";

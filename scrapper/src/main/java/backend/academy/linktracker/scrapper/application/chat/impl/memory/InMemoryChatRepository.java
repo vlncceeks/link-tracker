@@ -1,13 +1,13 @@
 package backend.academy.linktracker.scrapper.application.chat.impl.memory;
 
+import backend.academy.linktracker.scrapper.application.Clearable;
 import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import backend.academy.linktracker.scrapper.application.exception.ChatAlreadyExistsException;
 import backend.academy.linktracker.scrapper.application.exception.ChatNotFoundException;
 import java.util.HashSet;
 import java.util.Set;
 
-
-public class InMemoryChatRepository implements ChatRepository {
+public class InMemoryChatRepository implements ChatRepository, Clearable {
     private final Set<Long> storage = new HashSet<>();
 
     @Override

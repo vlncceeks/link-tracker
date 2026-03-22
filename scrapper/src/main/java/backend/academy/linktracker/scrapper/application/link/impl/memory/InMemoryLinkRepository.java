@@ -1,5 +1,6 @@
 package backend.academy.linktracker.scrapper.application.link.impl.memory;
 
+import backend.academy.linktracker.scrapper.application.Clearable;
 import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import backend.academy.linktracker.scrapper.application.exception.ChatNotFoundException;
 import backend.academy.linktracker.scrapper.application.exception.LinkNotFoundException;
@@ -12,8 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
-public class InMemoryLinkRepository implements LinkRepository {
+public class InMemoryLinkRepository implements LinkRepository, Clearable {
     private final Map<Long, Map<String, TrackedLink>> storage = new HashMap<>();
     private final AtomicInteger idCounter = new AtomicInteger(1);
     private final ChatRepository chatRepository;
@@ -26,8 +26,8 @@ public class InMemoryLinkRepository implements LinkRepository {
     public TrackedLink add(Long chatId, TrackedLink link) {
         if (!chatRepository.exists(chatId)) throw new ChatNotFoundException(chatId);
         storage.computeIfAbsent(chatId, k -> new HashMap<>());
-        TrackedLink withId = new TrackedLink(idCounter.getAndIncrement(), chatId, link.getUrl(),
-            link.getTags(), link.getFilters());
+        TrackedLink withId =
+                new TrackedLink(idCounter.getAndIncrement(), chatId, link.getUrl(), link.getTags(), link.getFilters());
         storage.get(chatId).put(withId.getUrl(), withId);
         return withId;
     }
@@ -54,11 +54,9 @@ public class InMemoryLinkRepository implements LinkRepository {
     @Override
     public Map<String, List<Long>> getAllLinksWithChats() {
         Map<String, List<Long>> result = new HashMap<>();
-        storage.forEach((chatId, links) ->
-            links.keySet().forEach(url ->
-                result.computeIfAbsent(url, k -> new ArrayList<>()).add(chatId)
-            )
-        );
+        storage.forEach(
+                (chatId, links) -> links.keySet().forEach(url -> result.computeIfAbsent(url, k -> new ArrayList<>())
+                        .add(chatId)));
         return result;
     }
 

@@ -1,8 +1,8 @@
 package backend.academy.linktracker.scrapper.infrastructure.converter;
 
+import java.util.Set;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
-import java.util.Set;
 
 @WritingConverter
 public class SetToStringArrayConverter implements Converter<Set<String>, String[]> {

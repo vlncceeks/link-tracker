@@ -20,7 +20,6 @@ public class RepositoryConfig {
     @Bean
     @ConditionalOnProperty(name = "app.access-type", havingValue = "SQL")
     public ChatRepository sqlChatRepository(JdbcClient jdbcClient) {
-        System.out.println("=== CREATING SQL CHAT REPOSITORY ===");
         return new SqlChatRepository(jdbcClient);
     }
 
@@ -33,7 +32,6 @@ public class RepositoryConfig {
     @Bean
     @ConditionalOnProperty(name = "app.access-type", havingValue = "MEMORY")
     public ChatRepository inMemoryChatRepository() {
-        System.out.println("=== CREATING IN MEMORY CHAT REPOSITORY ===");
         return new InMemoryChatRepository();
     }
 

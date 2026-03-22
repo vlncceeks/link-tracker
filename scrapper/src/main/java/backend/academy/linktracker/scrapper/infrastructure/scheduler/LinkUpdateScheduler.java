@@ -1,6 +1,5 @@
 package backend.academy.linktracker.scrapper.infrastructure.scheduler;
 
-import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import backend.academy.linktracker.scrapper.application.client.BotClient;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
@@ -36,17 +35,15 @@ public class LinkUpdateScheduler {
 
         allLinks.forEach((url, chatIds) -> {
             Long firstChatId = chatIds.getFirst();
-            linkRepository.find(firstChatId, url)
-                .ifPresentOrElse(
-                    link -> findChecker(url)
-                        .ifPresentOrElse(
-                            checker -> processLink(checker, link, chatIds),
-                            () -> logger.atWarn()
-                                .addKeyValue("url", url)
-                                .log("Нет подходящего чекера для ссылки")),
-                    () -> logger.atWarn()
-                        .addKeyValue("url", url)
-                        .log("Ссылка не найдена"));
+            linkRepository
+                    .find(firstChatId, url)
+                    .ifPresentOrElse(
+                            link -> findChecker(url)
+                                    .ifPresentOrElse(
+                                            checker -> processLink(checker, link, chatIds), () -> logger.atWarn()
+                                                    .addKeyValue("url", url)
+                                                    .log("Нет подходящего чекера для ссылки")),
+                            () -> logger.atWarn().addKeyValue("url", url).log("Ссылка не найдена"));
         });
 
         logger.atInfo().log("Проверка обновлений завершена");
@@ -60,18 +57,14 @@ public class LinkUpdateScheduler {
         try {
             checker.check(link).ifPresent(description -> {
                 logger.atInfo()
-                    .addKeyValue("url", link.getUrl())
-                    .addKeyValue("chatCount", chatIds.size())
-                    .log("Обнаружено обновление, отправляем уведомление");
+                        .addKeyValue("url", link.getUrl())
+                        .addKeyValue("chatCount", chatIds.size())
+                        .log("Обнаружено обновление, отправляем уведомление");
 
-                botClient.sendUpdate(
-                    new LinkUpdateRequest(link.getId(), link.getUrl(), description, chatIds));
+                botClient.sendUpdate(new LinkUpdateRequest(link.getId(), link.getUrl(), description, chatIds));
             });
         } catch (Exception e) {
-            logger.atError()
-                .addKeyValue("url", link.getUrl())
-                .setCause(e)
-                .log("Ошибка при проверке ссылки");
+            logger.atError().addKeyValue("url", link.getUrl()).setCause(e).log("Ошибка при проверке ссылки");
         }
     }
 }

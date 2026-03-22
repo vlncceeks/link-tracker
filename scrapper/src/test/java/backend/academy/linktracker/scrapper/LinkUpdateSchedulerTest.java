@@ -60,10 +60,10 @@ public class LinkUpdateSchedulerTest {
         scheduler.checkUpdates();
 
         verify(botClient, times(1)).sendUpdate(any(LinkUpdateRequest.class));
-        verify(botClient).sendUpdate(argThat(req ->
-            req.tgChatIds().containsAll(List.of(CHAT_ID_1, CHAT_ID_2))
-                && req.tgChatIds().size() == 2
-                && req.url().equals(URL)));
+        verify(botClient)
+                .sendUpdate(argThat(req -> req.tgChatIds().containsAll(List.of(CHAT_ID_1, CHAT_ID_2))
+                        && req.tgChatIds().size() == 2
+                        && req.url().equals(URL)));
     }
 
     @Test
@@ -93,7 +93,7 @@ public class LinkUpdateSchedulerTest {
 
     @Test
     void checkUpdates_checkerThrows_doesNotCrash() {
-        TrackedLink link = new TrackedLink(1,1l, URL, Set.of(), Set.of());
+        TrackedLink link = new TrackedLink(1, 1l, URL, Set.of(), Set.of());
         link.setLastCheckedAt(Instant.now());
 
         when(linkRepository.getAllLinksWithChats()).thenReturn(Map.of(URL, List.of(CHAT_ID_1)));
