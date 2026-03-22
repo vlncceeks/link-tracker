@@ -12,17 +12,4 @@ public interface ChatRepository {
 
     boolean exists(Long chatId);
 
-    void addLink(Long chatId, TrackedLink link);
-
-    void removeLink(Long chatId, String url);
-
-    Optional<TrackedLink> findLink(Long chatId, String url);
-
-    List<TrackedLink> getLinks(Long chatId);
-
-    Map<String, List<Long>> getAllLinksWithChats();
-
-    Integer nextId();
-
-    void clear();
 }

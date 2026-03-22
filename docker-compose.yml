@@ -1,0 +1,74 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    environment:
+      POSTGRES_DB: scrapper
+      POSTGRES_USER: scrapper
+      POSTGRES_PASSWORD: scrapper
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U scrapper" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  liquibase:
+    image: liquibase/liquibase:4.27
+    container_name: liquibase-migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/liquibase/changelog
+    command: >
+      --url=jdbc:postgresql://postgres:5432/scrapper
+      --username=scrapper
+      --password=scrapper
+      --searchPath=/liquibase/changelog
+      --changelog-file=master.xml
+      update
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["java", "-jar", "bot.jar"]
+    container_name: bot-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - SCRAPPER_URL=http://scrapper:8082
+    ports:
+      - "8081:8081"
+
+  scrapper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["java", "-jar", "scrapper.jar"]
+    container_name: scrapper-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - STACKOVERFLOW_KEY=${STACKOVERFLOW_KEY}
+      - STACKOVERFLOW_ACCESS_KEY=${STACKOVERFLOW_ACCESS_KEY}
+      - BOT_URL=http://bot:8081
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=scrapper
+      - DB_USER=scrapper
+      - DB_PASSWORD=scrapper
+      - SPRING_LIQUIBASE_ENABLED=false
+      - APP_ACCESS_TYPE=SQL
+    depends_on:
+      liquibase:
+        condition: service_completed_successfully
+      bot:
+        condition: service_started
+
+volumes:
+  postgres_data:

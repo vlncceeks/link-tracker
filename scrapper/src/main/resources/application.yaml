@@ -2,6 +2,13 @@ server:
   port: 8082
 
 spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:scrapper}
+    username: ${DB_USER:scrapper}
+    password: ${DB_PASSWORD:scrapper}
+  liquibase:
+    change-log: classpath:db/changelog/master.xml
+    enabled: true
   application:
     name: scrapper
 
@@ -13,9 +20,10 @@ app:
   github:
     token: ${GITHUB_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
     base-url: https://api.github.com
+  access-type: SQL
 
 bot:
-  base-url: http://localhost:8081
+  base-url: ${BOT_URL:http://localhost:8081}
 
 scheduler:
   interval: 60000

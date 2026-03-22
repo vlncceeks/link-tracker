@@ -3,6 +3,7 @@ package backend.academy.linktracker.scrapper.infrastructure.scheduler;
 import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import backend.academy.linktracker.scrapper.application.client.BotClient;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
+import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import backend.academy.linktracker.scrapper.application.service.LinkUpdateChecker;
 import java.util.List;
@@ -20,14 +21,13 @@ public class LinkUpdateScheduler {
 
     private static final Logger logger = LoggerFactory.getLogger(LinkUpdateScheduler.class);
 
-    private final ChatRepository chatRepository;
+    private final LinkRepository linkRepository;
     private final BotClient botClient;
     private final List<LinkUpdateChecker> checkers;
 
     @Scheduled(fixedDelayString = "${scheduler.interval}")
     public void checkUpdates() {
-
-        Map<String, List<Long>> allLinks = chatRepository.getAllLinksWithChats();
+        Map<String, List<Long>> allLinks = linkRepository.getAllLinksWithChats();
 
         if (allLinks.isEmpty()) {
             logger.atDebug().log("Нет ссылок для проверки");
@@ -35,20 +35,21 @@ public class LinkUpdateScheduler {
         }
 
         allLinks.forEach((url, chatIds) -> {
-            logger.atInfo().log("allLinks test");
             Long firstChatId = chatIds.getFirst();
-            chatRepository
-                    .findLink(firstChatId, url)
-                    .ifPresentOrElse(
-                            link -> findChecker(url)
-                                    .ifPresentOrElse(
-                                            checker -> processLink(checker, link, chatIds), () -> logger.atWarn()
-                                                    .addKeyValue("url", url)
-                                                    .log("Нет подходящего чекера для ссылки")),
-                            () -> logger.atWarn().log("Link not found"));
+            linkRepository.find(firstChatId, url)
+                .ifPresentOrElse(
+                    link -> findChecker(url)
+                        .ifPresentOrElse(
+                            checker -> processLink(checker, link, chatIds),
+                            () -> logger.atWarn()
+                                .addKeyValue("url", url)
+                                .log("Нет подходящего чекера для ссылки")),
+                    () -> logger.atWarn()
+                        .addKeyValue("url", url)
+                        .log("Ссылка не найдена"));
         });
 
-        logger.atInfo().log("Check updates finished");
+        logger.atInfo().log("Проверка обновлений завершена");
     }
 
     private Optional<LinkUpdateChecker> findChecker(String url) {
@@ -59,14 +60,18 @@ public class LinkUpdateScheduler {
         try {
             checker.check(link).ifPresent(description -> {
                 logger.atInfo()
-                        .addKeyValue("url", link.getUrl())
-                        .addKeyValue("chatCount", chatIds.size())
-                        .log("Find update, send notification");
+                    .addKeyValue("url", link.getUrl())
+                    .addKeyValue("chatCount", chatIds.size())
+                    .log("Обнаружено обновление, отправляем уведомление");
 
-                botClient.sendUpdate(new LinkUpdateRequest(link.getId(), link.getUrl(), description, chatIds));
+                botClient.sendUpdate(
+                    new LinkUpdateRequest(link.getId(), link.getUrl(), description, chatIds));
             });
         } catch (Exception e) {
-            logger.atError().addKeyValue("url", link.getUrl()).setCause(e).log("Ошибка при проверке ссылки");
+            logger.atError()
+                .addKeyValue("url", link.getUrl())
+                .setCause(e)
+                .log("Ошибка при проверке ссылки");
         }
     }
 }

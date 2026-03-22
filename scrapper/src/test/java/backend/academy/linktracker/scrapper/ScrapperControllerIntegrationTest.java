@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import backend.academy.linktracker.scrapper.application.chat.impl.InMemoryChatRepository;
+import backend.academy.linktracker.scrapper.application.chat.impl.memory.InMemoryChatRepository;
 import backend.academy.linktracker.scrapper.application.dto.request.AddLinkRequest;
 import backend.academy.linktracker.scrapper.application.dto.request.RemoveLinkRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;

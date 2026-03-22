@@ -35,7 +35,7 @@ public class ListCommand implements Command {
             return listLinks.links().stream().map(link -> link.url()).collect(Collectors.joining(", "));
         } catch (Exception e) {
             logger.atError().addKeyValue("status", e.getMessage()).log("Ошибка ответа от Scrapper");
-            return e.getMessage();
+            return "Ошибка ответа сервиса";
         }
     }
 }
