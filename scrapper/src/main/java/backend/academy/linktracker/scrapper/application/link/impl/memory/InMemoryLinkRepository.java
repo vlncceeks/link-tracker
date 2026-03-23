@@ -26,8 +26,7 @@ public class InMemoryLinkRepository implements LinkRepository, Clearable {
     public TrackedLink add(Long chatId, TrackedLink link) {
         if (!chatRepository.exists(chatId)) throw new ChatNotFoundException(chatId);
         storage.computeIfAbsent(chatId, k -> new HashMap<>());
-        TrackedLink withId =
-                new TrackedLink(idCounter.getAndIncrement(), chatId, link.getUrl(), link.getTags(), link.getFilters());
+        TrackedLink withId = new TrackedLink(idCounter.getAndIncrement(), chatId, link.getUrl());
         storage.get(chatId).put(withId.getUrl(), withId);
         return withId;
     }

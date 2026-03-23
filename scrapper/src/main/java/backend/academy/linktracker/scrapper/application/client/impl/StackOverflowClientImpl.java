@@ -40,13 +40,13 @@ public class StackOverflowClientImpl implements StackOverflowClient {
             logger.atWarn()
                     .addKeyValue("questionId", questionId)
                     .addKeyValue("status", e.getStatusCode())
-                    .log("StackOverflow API вернул ошибку");
+                    .log("StackOverflow API return Error");
             return Optional.empty();
         } catch (RestClientException e) {
             logger.atWarn()
                     .addKeyValue("questionId", questionId)
                     .addKeyValue("error", e.getMessage())
-                    .log("Ошибка при обработке ответа StackOverflow");
+                    .log("Error when receiving StackOverflow response");
             return Optional.empty();
         }
     }

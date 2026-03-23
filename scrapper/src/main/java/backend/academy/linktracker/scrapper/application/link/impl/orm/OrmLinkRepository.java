@@ -17,7 +17,7 @@ public class OrmLinkRepository implements LinkRepository {
 
     @Override
     public TrackedLink add(Long chatId, TrackedLink link) {
-        TrackedLink toSave = new TrackedLink(null, chatId, link.getUrl(), link.getTags(), link.getFilters());
+        TrackedLink toSave = new TrackedLink(null, chatId, link.getUrl());
         return repository.save(toSave);
     }
 

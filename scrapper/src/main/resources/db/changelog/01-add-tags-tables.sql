@@ -1,0 +1,21 @@
+DROP TABLE IF EXISTS tracked_links;
+
+CREATE TABLE IF NOT EXISTS tracked_links (
+    id SERIAL PRIMARY KEY,
+    chat_id BIGINT NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+    url TEXT NOT NULL,
+    last_checked_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (chat_id, url)
+);
+
+CREATE TABLE IF NOT EXISTS tags (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS link_tags (
+    id SERIAL PRIMARY KEY,
+    link_id BIGINT NOT NULL REFERENCES tracked_links(id) ON DELETE CASCADE,
+    tag_id BIGINT NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+    UNIQUE (link_id, tag_id)
+);

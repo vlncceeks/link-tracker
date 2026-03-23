@@ -17,7 +17,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +48,7 @@ public class LinkUpdateSchedulerTest {
 
     @Test
     void checkUpdates_sendsNotificationOnlyToSubscribers() {
-        TrackedLink link = new TrackedLink(1, 1l, URL, Set.of(), Set.of());
+        TrackedLink link = new TrackedLink(1, 1l, URL);
         link.setLastCheckedAt(Instant.now().minusSeconds(3600));
 
         when(linkRepository.getAllLinksWithChats()).thenReturn(Map.of(URL, List.of(CHAT_ID_1, CHAT_ID_2)));
@@ -68,7 +67,7 @@ public class LinkUpdateSchedulerTest {
 
     @Test
     void checkUpdates_noUpdates_doesNotSendNotification() {
-        TrackedLink link = new TrackedLink(1, 1l, URL, Set.of(), Set.of());
+        TrackedLink link = new TrackedLink(1, 1l, URL);
         link.setLastCheckedAt(Instant.now());
 
         when(linkRepository.getAllLinksWithChats()).thenReturn(Map.of(URL, List.of(CHAT_ID_1)));
@@ -93,7 +92,7 @@ public class LinkUpdateSchedulerTest {
 
     @Test
     void checkUpdates_checkerThrows_doesNotCrash() {
-        TrackedLink link = new TrackedLink(1, 1l, URL, Set.of(), Set.of());
+        TrackedLink link = new TrackedLink(1, 1l, URL);
         link.setLastCheckedAt(Instant.now());
 
         when(linkRepository.getAllLinksWithChats()).thenReturn(Map.of(URL, List.of(CHAT_ID_1)));

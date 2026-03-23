@@ -10,4 +10,4 @@ CREATE TABLE IF NOT EXISTS tracked_links (
     filters TEXT[] DEFAULT '{}',
     last_checked_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE (chat_id, url)
-    );
+);

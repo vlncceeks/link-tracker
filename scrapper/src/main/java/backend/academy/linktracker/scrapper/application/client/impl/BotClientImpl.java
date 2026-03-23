@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
 @Component
@@ -30,6 +31,11 @@ public class BotClientImpl implements BotClient {
 
     @Override
     public void sendUpdate(LinkUpdateRequest request) {
-        restClient.post().uri("/updates").body(request).retrieve().toBodilessEntity();
+        try {
+            restClient.post().uri("/updates").body(request).retrieve().toBodilessEntity();
+        } catch (ResourceAccessException e) {
+            logger.atError().addKeyValue("url", request.url()).setCause(e).log("Unable to connect to the bot client");
+            throw new BotClientException("Bot client is unavailable: " + e.getMessage());
+        }
     }
 }

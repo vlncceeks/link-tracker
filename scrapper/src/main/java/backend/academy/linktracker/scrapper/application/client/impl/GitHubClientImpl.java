@@ -45,14 +45,14 @@ public class GitHubClientImpl implements GitHubClient {
                     .addKeyValue("owner", owner)
                     .addKeyValue("repo", repo)
                     .addKeyValue("status", e.getStatusCode())
-                    .log("Github API вернул ошибку");
+                    .log("Github API return Error");
             return Optional.empty();
         } catch (RestClientException e) {
             logger.atWarn()
                     .addKeyValue("owner", owner)
                     .addKeyValue("repo", repo)
                     .addKeyValue("error", e.getMessage())
-                    .log("Ошибка при обработке ответа GitHub");
+                    .log("Error when receiving GitHub response");
             return Optional.empty();
         }
     }

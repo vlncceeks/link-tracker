@@ -11,7 +11,6 @@ import backend.academy.linktracker.scrapper.application.link.impl.sql.SqlLinkRep
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,13 +75,13 @@ public class SqlRepositoryIntegrationTest {
 
     @Test
     void add_linkSavedToDatabase() {
-        TrackedLink link = new TrackedLink(null, CHAT_ID, URL, Set.of("java"), Set.of("filter1"));
+        TrackedLink link = new TrackedLink(null, CHAT_ID, URL);
 
         TrackedLink saved = linkRepository.add(CHAT_ID, link);
 
         assertThat(saved.getId()).isNotNull();
         assertThat(saved.getUrl()).isEqualTo(URL);
-        assertThat(saved.getTags()).isEqualTo(Set.of("java"));
+        // assertThat(saved.getTags()).isEqualTo(Set.of("java"));
 
         Optional<TrackedLink> found = linkRepository.find(CHAT_ID, URL);
         assertThat(found).isPresent();
@@ -91,7 +90,7 @@ public class SqlRepositoryIntegrationTest {
 
     @Test
     void remove_linkAbsentAfterDeletion() {
-        linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL, Set.of(), Set.of()));
+        linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL));
 
         linkRepository.remove(CHAT_ID, URL);
 
@@ -101,17 +100,17 @@ public class SqlRepositoryIntegrationTest {
 
     @Test
     void add_duplicateLink_throwsException() {
-        linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL, Set.of(), Set.of()));
+        linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL));
 
-        assertThatThrownBy(() -> linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL, Set.of(), Set.of())))
+        assertThatThrownBy(() -> linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL)))
                 .isInstanceOf(Exception.class);
     }
 
     @Test
     void findAll_returnsAllLinksForChat() {
         String url2 = "https://stackoverflow.com/questions/12345/title";
-        linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL, Set.of(), Set.of()));
-        linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, url2, Set.of(), Set.of()));
+        linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL));
+        linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, url2));
 
         List<TrackedLink> links = linkRepository.findAll(CHAT_ID);
 
@@ -126,8 +125,8 @@ public class SqlRepositoryIntegrationTest {
                 .sql("INSERT INTO chats (id) VALUES (:id)")
                 .param("id", chatId2)
                 .update();
-        linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL, Set.of(), Set.of()));
-        linkRepository.add(chatId2, new TrackedLink(null, CHAT_ID, URL, Set.of(), Set.of()));
+        linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL));
+        linkRepository.add(chatId2, new TrackedLink(null, CHAT_ID, URL));
 
         Map<String, List<Long>> result = linkRepository.getAllLinksWithChats();
 

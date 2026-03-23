@@ -2,20 +2,15 @@ package backend.academy.linktracker.scrapper.application.link.impl.sql;
 
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,14 +24,12 @@ public class SqlLinkRepository implements LinkRepository {
     public TrackedLink add(Long chatId, TrackedLink link) {
         return jdbcClient
                 .sql("""
-                INSERT INTO tracked_links (chat_id, url, tags, filters, last_checked_at)
-                VALUES (:chatId, :url, :tags::text[], :filters::text[], :lastCheckedAt)
-                RETURNING id, chat_id, url, tags, filters, last_checked_at
+                INSERT INTO tracked_links (chat_id, url, last_checked_at)
+                VALUES (:chatId, :url, :lastCheckedAt)
+                RETURNING id, chat_id, url, last_checked_at
                 """)
                 .param("chatId", chatId)
                 .param("url", link.getUrl())
-                .param("tags", toArray(link.getTags()))
-                .param("filters", toArray(link.getFilters()))
                 .param(
                         "lastCheckedAt",
                         link.getLastCheckedAt() != null
@@ -92,25 +85,10 @@ public class SqlLinkRepository implements LinkRepository {
     // Маппер строки БД => TrackedLink
     @SuppressWarnings("PMD.UnusedFormalParameter")
     private TrackedLink mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Array tagsArray = rs.getArray("tags");
-        Array filtersArray = rs.getArray("filters");
-
-        Set<String> tags =
-                tagsArray != null ? new HashSet<>(Arrays.asList((String[]) tagsArray.getArray())) : new HashSet<>();
-        Set<String> filters = filtersArray != null
-                ? new HashSet<>(Arrays.asList((String[]) filtersArray.getArray()))
-                : new HashSet<>();
-
-        TrackedLink link = new TrackedLink(rs.getInt("id"), rs.getLong("chat_id"), rs.getString("url"), tags, filters);
+        TrackedLink link = new TrackedLink(rs.getInt("id"), rs.getLong("chat_id"), rs.getString("url"));
 
         OffsetDateTime lastCheckedAt = rs.getObject("last_checked_at", OffsetDateTime.class);
         link.setLastCheckedAt(lastCheckedAt != null ? lastCheckedAt.toInstant() : null);
         return link;
-    }
-
-    // Конвертация Set<String> => строка для PostgreSQL массива
-    private String toArray(Set<String> set) {
-        if (set == null || set.isEmpty()) return "{}";
-        return "{" + set.stream().map(s -> "\"" + s + "\"").collect(Collectors.joining(",")) + "}";
     }
 }
