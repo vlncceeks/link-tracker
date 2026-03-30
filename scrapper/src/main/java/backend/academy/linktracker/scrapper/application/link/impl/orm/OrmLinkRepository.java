@@ -1,12 +1,16 @@
 package backend.academy.linktracker.scrapper.application.link.impl.orm;
 
+import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,5 +46,22 @@ public class OrmLinkRepository implements LinkRepository {
         repository.findAll().forEach(link -> result.computeIfAbsent(link.getUrl(), k -> new ArrayList<>())
                 .add(link.getChatId()));
         return result;
+    }
+
+    @Override
+    public List<LinkResponse> findAllWithTags(Long chatId) {
+        return repository.findAllWithTagsByChatId(chatId).stream()
+                .collect(Collectors.groupingBy(LinkWithTagRow::id, LinkedHashMap::new, Collectors.toList()))
+                .entrySet()
+                .stream()
+                .map(e -> {
+                    List<LinkWithTagRow> rows = e.getValue();
+                    List<String> tags = rows.stream()
+                            .map(LinkWithTagRow::tagName)
+                            .filter(Objects::nonNull)
+                            .toList();
+                    return new LinkResponse(e.getKey(), rows.getFirst().url(), tags, List.of());
+                })
+                .toList();
     }
 }

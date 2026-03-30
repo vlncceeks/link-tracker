@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,12 +29,7 @@ public class LinkService {
     private final LinkTagRepository linkTagRepository;
 
     public ListLinksResponse getAllByChatId(Long chatId) {
-        List<LinkResponse> links = linkRepository.findAll(chatId).stream()
-                .map(link -> {
-                    List<String> tags = getTagNamesForLink(link.getId());
-                    return new LinkResponse(link.getId(), link.getUrl(), tags, List.of());
-                })
-                .toList();
+        List<LinkResponse> links = linkRepository.findAllWithTags(chatId);
 
         logger.atDebug()
                 .addKeyValue("chatId", chatId)
@@ -43,6 +39,7 @@ public class LinkService {
         return new ListLinksResponse(links, links.size());
     }
 
+    @Transactional
     public LinkResponse addLinkIntoChat(Long chatId, AddLinkRequest request) {
         if (linkRepository.find(chatId, request.url()).isPresent()) {
             logger.atWarn()
@@ -74,6 +71,7 @@ public class LinkService {
         return new LinkResponse(link.getId(), link.getUrl(), tagNames, List.of());
     }
 
+    @Transactional
     public LinkResponse removeLinkFromChat(Long chatId, RemoveLinkRequest request) {
         TrackedLink link = linkRepository.find(chatId, request.url()).orElseThrow(() -> {
             logger.atWarn()
@@ -84,7 +82,6 @@ public class LinkService {
         });
 
         List<String> tagNames = getTagNamesForLink(link.getId());
-        linkTagRepository.removeAllTagsFromLink(link.getId());
         linkRepository.remove(chatId, request.url());
 
         logger.atInfo()

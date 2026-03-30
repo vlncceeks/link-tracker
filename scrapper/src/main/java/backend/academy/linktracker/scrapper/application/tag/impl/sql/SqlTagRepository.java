@@ -16,11 +16,13 @@ public class SqlTagRepository implements TagRepository {
 
     @Override
     public Tag add(String name) {
-        String sql = "INSERT INTO tags(name) VALUES (?) RETURNING id";
+        String sql = """
+            INSERT INTO tags(name) VALUES (?)
+            ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+            RETURNING id, name
+        """;
 
-        Integer id = jdbcTemplate.queryForObject(sql, Integer.class, name);
-
-        return new Tag(id, name);
+        return jdbcTemplate.queryForObject(sql, TAG_ROW_MAPPER, name);
     }
 
     @Override

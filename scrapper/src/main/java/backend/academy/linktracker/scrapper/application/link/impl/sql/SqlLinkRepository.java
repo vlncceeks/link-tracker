@@ -1,5 +1,6 @@
 package backend.academy.linktracker.scrapper.application.link.impl.sql;
 
+import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import java.sql.ResultSet;
@@ -8,9 +9,12 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,6 +84,37 @@ public class SqlLinkRepository implements LinkRepository {
         rows.forEach(
                 row -> result.computeIfAbsent(row.url(), k -> new ArrayList<>()).add(row.chatId()));
         return result;
+    }
+
+    @Override
+    public List<LinkResponse> findAllWithTags(Long chatId) {
+        record Row(int linkId, String url, String tagName) {}
+
+        List<Row> rows = jdbcClient
+                .sql("""
+            SELECT tl.id, tl.url, t.name as tag_name
+            FROM tracked_links tl
+            LEFT JOIN link_tags lt ON tl.id = lt.link_id
+            LEFT JOIN tags t ON lt.tag_id = t.id
+            WHERE tl.chat_id = :chatId
+            """)
+                .param("chatId", chatId)
+                .query((rs, rowNum) -> new Row(rs.getInt("id"), rs.getString("url"), rs.getString("tag_name")))
+                .list();
+
+        return rows.stream()
+                .collect(Collectors.groupingBy(Row::linkId, LinkedHashMap::new, Collectors.toList()))
+                .entrySet()
+                .stream()
+                .map(e -> {
+                    List<Row> linkRows = e.getValue();
+                    List<String> tags = linkRows.stream()
+                            .map(Row::tagName)
+                            .filter(Objects::nonNull)
+                            .toList();
+                    return new LinkResponse(e.getKey(), linkRows.getFirst().url(), tags, List.of());
+                })
+                .toList();
     }
 
     // Маппер строки БД => TrackedLink

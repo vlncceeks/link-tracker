@@ -2,6 +2,7 @@ package backend.academy.linktracker.scrapper.application.link.impl.memory;
 
 import backend.academy.linktracker.scrapper.application.Clearable;
 import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
+import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
 import backend.academy.linktracker.scrapper.application.exception.ChatNotFoundException;
 import backend.academy.linktracker.scrapper.application.exception.LinkNotFoundException;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
@@ -17,6 +18,7 @@ public class InMemoryLinkRepository implements LinkRepository, Clearable {
     private final Map<Long, Map<String, TrackedLink>> storage = new HashMap<>();
     private final AtomicInteger idCounter = new AtomicInteger(1);
     private final ChatRepository chatRepository;
+    private final Map<Integer, List<String>> linkTags = new HashMap<>();
 
     public InMemoryLinkRepository(ChatRepository chatRepository) {
         this.chatRepository = chatRepository;
@@ -61,11 +63,22 @@ public class InMemoryLinkRepository implements LinkRepository, Clearable {
 
     public void clear() {
         storage.clear();
+        linkTags.clear();
         idCounter.set(1);
     }
 
     private Map<String, TrackedLink> getLinksForChat(Long chatId) {
         if (!storage.containsKey(chatId)) throw new ChatNotFoundException(chatId);
         return storage.get(chatId);
+    }
+
+    @Override
+    public List<LinkResponse> findAllWithTags(Long chatId) {
+        if (!storage.containsKey(chatId)) return List.of();
+
+        return storage.get(chatId).values().stream()
+                .map(link -> new LinkResponse(
+                        link.getId(), link.getUrl(), linkTags.getOrDefault(link.getId(), List.of()), List.of()))
+                .toList();
     }
 }

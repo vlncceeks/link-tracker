@@ -34,6 +34,10 @@ public class LinkUpdateScheduler {
         }
 
         allLinks.forEach((url, chatIds) -> {
+            if (chatIds.isEmpty()) {
+                logger.atWarn().addKeyValue("url", url).log("Ссылка без чатов, пропускаем");
+                return;
+            }
             Long firstChatId = chatIds.getFirst();
             linkRepository
                     .find(firstChatId, url)
