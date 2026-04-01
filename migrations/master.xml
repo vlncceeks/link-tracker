@@ -7,4 +7,5 @@
 
     <include relativeToChangelogFile="true" file="00-initial-schema.sql"/>
     <include relativeToChangelogFile="true" file="01-add-tags-tables.sql"/>
+    <include relativeToChangelogFile="true" file="02-create-indexes.sql"/>
 </databaseChangeLog>

@@ -1,13 +1,14 @@
 package backend.academy.linktracker.scrapper.application.linktag.impl.orm;
 
 import backend.academy.linktracker.scrapper.application.linktag.LinkTag;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 public interface LinkTagSpringRepository extends CrudRepository<LinkTag, Integer> {
-    List<LinkTag> findAllByLinkId(Integer linkId);
+    Page<LinkTag> findAllByLinkId(Integer linkId, Pageable pageable);
 
-    List<LinkTag> findAllByTagId(Integer tagId);
+    Page<LinkTag> findAllByTagId(Integer tagId, Pageable pageable);
 
     void deleteAllByLinkId(Integer linkId);
 }

@@ -2,9 +2,12 @@ package backend.academy.linktracker.scrapper.application.linktag.impl.orm;
 
 import backend.academy.linktracker.scrapper.application.linktag.LinkTag;
 import backend.academy.linktracker.scrapper.application.linktag.LinkTagRepository;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @RequiredArgsConstructor
 public class OrmLinkTagRepository implements LinkTagRepository {
@@ -22,16 +25,32 @@ public class OrmLinkTagRepository implements LinkTagRepository {
 
     @Override
     public List<Integer> findTagIdsByLinkId(Integer linkId) {
-        return linkTagSpringRepository.findAllByLinkId(linkId).stream()
-                .map(LinkTag::tagId)
-                .collect(Collectors.toList());
+        List<Integer> ids = new ArrayList<>();
+        int pageSize = 1000;
+        int pageNumber = 0;
+
+        Page<LinkTag> page;
+        do {
+            page = linkTagSpringRepository.findAllByLinkId(linkId, PageRequest.of(pageNumber, pageSize, Sort.by("id")));
+            page.getContent().forEach(p -> ids.add(p.getTagId()));
+            pageNumber++;
+        } while (page.hasNext());
+        return ids;
     }
 
     @Override
     public List<Integer> findLinkIdsByTagId(Integer tagId) {
-        return linkTagSpringRepository.findAllByTagId(tagId).stream()
-                .map(LinkTag::linkId)
-                .collect(Collectors.toList());
+        List<Integer> ids = new ArrayList<>();
+        int pageSize = 1000;
+        int pageNumber = 0;
+
+        Page<LinkTag> page;
+        do {
+            page = linkTagSpringRepository.findAllByTagId(tagId, PageRequest.of(pageNumber, pageSize, Sort.by("id")));
+            page.getContent().forEach(p -> ids.add(p.getLinkId()));
+            pageNumber++;
+        } while (page.hasNext());
+        return ids;
     }
 
     @Override

@@ -10,8 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
@@ -37,23 +39,56 @@ public class OrmLinkRepository implements LinkRepository {
 
     @Override
     public List<TrackedLink> findAll(Long chatId) {
-        return repository.findAllByChatId(chatId);
+        List<TrackedLink> links = new ArrayList<>();
+        int pageSize = 1000;
+        int pageNumber = 0;
+
+        Page<TrackedLink> page;
+        do {
+            page = repository.findAllByChatId(chatId, PageRequest.of(pageNumber, pageSize, Sort.by("id")));
+            links.addAll(page.getContent());
+            pageNumber++;
+        } while (page.hasNext());
+
+        return links;
     }
 
     @Override
     public Map<String, List<Long>> getAllLinksWithChats() {
         Map<String, List<Long>> result = new HashMap<>();
-        repository.findAll().forEach(link -> result.computeIfAbsent(link.getUrl(), k -> new ArrayList<>())
-                .add(link.getChatId()));
+        int pageSize = 1000;
+        int pageNumber = 0;
+
+        Page<TrackedLink> page;
+        do {
+            page = repository.findAll(PageRequest.of(pageNumber, pageSize, Sort.by("id")));
+            page.getContent().forEach(link -> result.computeIfAbsent(link.getUrl(), k -> new ArrayList<>())
+                    .add(link.getChatId()));
+            pageNumber++;
+        } while (page.hasNext());
+
         return result;
     }
 
     @Override
     public List<LinkResponse> findAllWithTags(Long chatId) {
-        return repository.findAllWithTagsByChatId(chatId).stream()
-                .collect(Collectors.groupingBy(LinkWithTagRow::id, LinkedHashMap::new, Collectors.toList()))
-                .entrySet()
-                .stream()
+        Map<Integer, List<LinkWithTagRow>> grouped = new LinkedHashMap<>();
+        int pageSize = 1000;
+        int lastId = 0;
+
+        while (true) {
+            List<LinkWithTagRow> rows = repository.findAllWithTagsByChatIdKeySet(chatId, lastId, pageSize);
+
+            if (rows.isEmpty()) break;
+
+            rows.forEach(row ->
+                    grouped.computeIfAbsent(row.id(), k -> new ArrayList<>()).add(row));
+
+            lastId = rows.getLast().id();
+            if (rows.size() < pageSize) break;
+        }
+
+        return grouped.entrySet().stream()
                 .map(e -> {
                     List<LinkWithTagRow> rows = e.getValue();
                     List<String> tags = rows.stream()

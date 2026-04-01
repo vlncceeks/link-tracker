@@ -20,7 +20,7 @@ app:
   github:
     token: ${GITHUB_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
     base-url: https://api.github.com
-  access-type: ${ACCESS_TYPE:MEMORY}
+  access-type: ${ACCESS_TYPE:SQL}
 
 bot:
   base-url: ${BOT_URL:http://localhost:8081}

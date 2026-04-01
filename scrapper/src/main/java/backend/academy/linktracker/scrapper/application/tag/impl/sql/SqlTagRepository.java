@@ -2,6 +2,7 @@ package backend.academy.linktracker.scrapper.application.tag.impl.sql;
 
 import backend.academy.linktracker.scrapper.application.tag.Tag;
 import backend.academy.linktracker.scrapper.application.tag.TagRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -54,9 +55,20 @@ public class SqlTagRepository implements TagRepository {
 
     @Override
     public List<Tag> findAll() {
-        String sql = "SELECT id, name FROM tags";
+        List<Tag> tags = new ArrayList<>();
+        int pageSize = 1000;
+        long lastId = 0;
+        String sql = "SELECT id, name FROM tags WHERE id > ? ORDER BY id LIMIT ? ";
 
-        return jdbcTemplate.query(sql, TAG_ROW_MAPPER);
+        while (true) {
+            List<Tag> batch = jdbcTemplate.query(sql, TAG_ROW_MAPPER, lastId, pageSize);
+            if (batch.isEmpty()) break;
+            tags.addAll(batch);
+            lastId = batch.getLast().getId();
+            if (batch.size() < pageSize) break;
+        }
+
+        return tags;
     }
 
     @Override
