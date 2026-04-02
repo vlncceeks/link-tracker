@@ -4,15 +4,18 @@ import backend.academy.linktracker.bot.application.client.ScrapperClient;
 import backend.academy.linktracker.bot.application.command.Command;
 import backend.academy.linktracker.bot.application.dto.request.RemoveLinkRequest;
 import backend.academy.linktracker.bot.application.dto.response.LinkResponse;
+import backend.academy.linktracker.bot.application.state.TrackCommandType;
+import backend.academy.linktracker.bot.application.state.TrackSession;
+import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
+import backend.academy.linktracker.bot.application.state.TrackState;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class UntrackCommand implements Command {
     private final ScrapperClient scrapperClient;
-
-    public UntrackCommand(ScrapperClient scrapperClient) {
-        this.scrapperClient = scrapperClient;
-    }
+    private final TrackSessionRepository sessionRepository;
 
     @Override
     public String getName() {
@@ -26,10 +29,7 @@ public class UntrackCommand implements Command {
 
     @Override
     public String execute(String username, Long chatId, String[] args) {
-        if (args.length == 0) {
-            return "Введите команду в формате:\n/untrack {url}";
-        }
-        LinkResponse response = scrapperClient.removeLink(chatId, new RemoveLinkRequest(args[0]));
-        return "Ссылка " + response.url() + " больше не отслеживается.";
+        sessionRepository.save(chatId, new TrackSession(TrackCommandType.UNTRACK));
+        return "Введите URL ссылки для удаления:";
     }
 }

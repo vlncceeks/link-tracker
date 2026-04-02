@@ -2,28 +2,31 @@ package backend.academy.linktracker.bot.application.state;
 
 import backend.academy.linktracker.bot.application.client.ScrapperClient;
 import backend.academy.linktracker.bot.application.dto.request.AddLinkRequest;
+import backend.academy.linktracker.bot.application.dto.request.RemoveLinkRequest;
 import backend.academy.linktracker.bot.application.exception.ScrapperClientException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 @RequiredArgsConstructor
 public class TrackDialogHandler {
     private static final Logger logger = LoggerFactory.getLogger(TrackDialogHandler.class);
 
-    private final TrackSessionRepository sessionRepository;
     private final ScrapperClient scrapperClient;
+    private final TrackSessionRepository sessionRepository;
 
     public String handle(Long chatId, String text) {
-        TrackSession session =
-                sessionRepository.find(chatId).orElseThrow(() -> new IllegalStateException("Сессия не найдена"));
+        TrackSession session = sessionRepository.find(chatId).orElseThrow(() -> new IllegalStateException("Сессия не найдена"));
 
         if (text.equals("/cancel")) {
-            sessionRepository.delete(chatId);
+            deleteSession(chatId);
             logger.atInfo().addKeyValue("chatId", chatId).log("Диалог /track отменён");
             return "Отслеживание отменено.";
         }
@@ -40,10 +43,14 @@ public class TrackDialogHandler {
         }
 
         session.setUrl(text);
+        logger.atDebug().addKeyValue("chatId", chatId).addKeyValue("url", text).log("URL получен");
+        if (session.getCommandType() == TrackCommandType.UNTRACK) {
+            sessionRepository.delete(chatId);
+            scrapperClient.removeLink(chatId, new RemoveLinkRequest(text));
+            return "Ссылка не отслеживается";
+        }
         session.setState(TrackState.WAITING_FOR_TAGS);
         sessionRepository.save(chatId, session);
-
-        logger.atDebug().addKeyValue("chatId", chatId).addKeyValue("url", text).log("URL получен, ожидаем теги");
 
         return "Введите теги или нажмите /skip:";
     }
@@ -81,5 +88,13 @@ public class TrackDialogHandler {
 
     private boolean isValidUrl(String text) {
         return text.startsWith("https://github.com/") || text.startsWith("https://stackoverflow.com/questions/");
+    }
+
+    public boolean hasSession(Long chatId) {
+        return sessionRepository.hasSession(chatId);
+    }
+
+    public void deleteSession(Long chatId) {
+        sessionRepository.delete(chatId);
     }
 }

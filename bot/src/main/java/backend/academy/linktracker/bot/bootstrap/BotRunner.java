@@ -18,7 +18,7 @@ public class BotRunner {
             TrackSessionRepository trackSessionRepository,
             TrackDialogHandler trackDialogHandler) {
         CommandDispatcher dispatcher =
-                new CommandDispatcher(commandRepository, bot, trackSessionRepository, trackDialogHandler);
+                new CommandDispatcher(commandRepository, bot, trackDialogHandler);
         logger.atInfo().log("Диспетчер инициализирован");
 
         bot.setUpdatesListener(updates -> {

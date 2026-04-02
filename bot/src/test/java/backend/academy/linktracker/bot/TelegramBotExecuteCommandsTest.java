@@ -26,6 +26,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 @ExtendWith(MockitoExtension.class)
 public class TelegramBotExecuteCommandsTest {
@@ -34,6 +36,10 @@ public class TelegramBotExecuteCommandsTest {
 
     @Mock
     private TrackSessionRepository sessionRepository;
+
+    @Container
+    static GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine")
+        .withExposedPorts(6379);
 
     private ListCommand listCommand;
     private TrackDialogHandler handler;
@@ -46,7 +52,8 @@ public class TelegramBotExecuteCommandsTest {
     @BeforeEach
     void setUp() {
         listCommand = new ListCommand(scrapperClient);
-        handler = new TrackDialogHandler(sessionRepository, scrapperClient);
+
+        handler = new TrackDialogHandler(scrapperClient, sessionRepository);
     }
 
     @Test
