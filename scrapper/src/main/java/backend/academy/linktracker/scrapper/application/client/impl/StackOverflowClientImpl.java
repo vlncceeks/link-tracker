@@ -1,17 +1,24 @@
 package backend.academy.linktracker.scrapper.application.client.impl;
 
 import backend.academy.linktracker.scrapper.application.client.StackOverflowClient;
+import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowAnswerResponse;
+import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowCommentResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowResponse;
 import backend.academy.linktracker.scrapper.infrastructure.configuration.StackoverflowProperties;
+import java.net.URI;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.client.support.HttpRequestWrapper;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
 public class StackOverflowClientImpl implements StackOverflowClient {
@@ -21,7 +28,21 @@ public class StackOverflowClientImpl implements StackOverflowClient {
     private final RestClient restClient;
 
     public StackOverflowClientImpl(StackoverflowProperties properties) {
-        this.restClient = RestClient.builder().baseUrl(properties.getBaseUrl()).build();
+        this.restClient = RestClient.builder()
+            .baseUrl(properties.getBaseUrl())
+            .requestInterceptor((request, body, execution) -> {
+                URI withParams = UriComponentsBuilder.fromUri(request.getURI())
+                    .queryParam("site", "stackoverflow")
+                    .queryParam("key", properties.getKey())
+                    .build().toUri();
+                return execution.execute(new HttpRequestWrapper(request) {
+                    @Override
+                    public URI getURI() {
+                        return withParams;
+                    }
+                }, body);
+            })
+            .build();
     }
 
     @Override
@@ -50,6 +71,56 @@ public class StackOverflowClientImpl implements StackOverflowClient {
             return Optional.empty();
         }
     }
+
+    public List<StackOverflowAnswerResponse.AnswerItem> fetchAnswers(Long questionId, Instant since) {
+        try {
+            StackOverflowAnswerResponse response = restClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                    .path("/questions/{id}/answers")
+                    .queryParam("site", "stackoverflow")
+                    .queryParam("filter", "withbody")
+                    .queryParam("sort", "creation")
+                    .queryParam("order", "desc")
+                    .build(questionId))
+                .retrieve()
+                .body(StackOverflowAnswerResponse.class);
+
+            if (response == null) return List.of();
+
+            return response.items().stream()
+                .filter(a -> a.creationDate().isAfter(since))
+                .toList();
+        } catch (RestClientException e) {
+            logger.atWarn().addKeyValue("questionId", questionId).log("Ошибка получения ответов SO");
+            return List.of();
+        }
+    }
+
+    public List<StackOverflowCommentResponse.CommentItem> fetchComments(Long questionId, Instant since) {
+        try {
+            StackOverflowCommentResponse response = restClient
+                .get()
+                .uri(uriBuilder -> uriBuilder
+                    .path("/questions/{id}/answers")
+                    .queryParam("filter", "withbody")
+                    .queryParam("sort", "creation")
+                    .queryParam("order", "desc")
+                    .build(questionId))
+                .retrieve()
+                .body(StackOverflowCommentResponse.class);
+
+            if (response == null) return List.of();
+
+            return response.items().stream()
+                .filter(a -> a.creationDate().isAfter(since))
+                .toList();
+        } catch (RestClientException e) {
+            logger.atWarn().addKeyValue("questionId", questionId).log("Ошибка получения ответов SO");
+            return List.of();
+        }
+    }
+
 
     public static Optional<Long> parseUrl(String url) {
         Matcher matcher = SO_URL.matcher(url);

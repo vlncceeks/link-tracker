@@ -4,7 +4,7 @@ import backend.academy.linktracker.scrapper.application.client.BotClient;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
-import backend.academy.linktracker.scrapper.application.service.LinkUpdateChecker;
+import backend.academy.linktracker.scrapper.infrastructure.service.LinkUpdateChecker;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,7 +24,7 @@ public class LinkUpdateScheduler {
     private final BotClient botClient;
     private final List<LinkUpdateChecker> checkers;
 
-    @Scheduled(fixedDelayString = "${scheduler.interval}")
+    @Scheduled(fixedDelayString = "${app.scheduler.interval}")
     public void checkUpdates() {
         Map<String, List<Long>> allLinks = linkRepository.getAllLinksWithChats();
 
@@ -44,12 +44,11 @@ public class LinkUpdateScheduler {
                     .ifPresentOrElse(
                             link -> findChecker(url)
                                     .ifPresentOrElse(
-                                            checker -> processLink(checker, link, chatIds), () -> logger.atWarn()
-                                                    .addKeyValue("url", url)
+                                            checker -> processLink(checker, link, chatIds),
+                                            () -> logger.atWarn().addKeyValue("url", url)
                                                     .log("Нет подходящего чекера для ссылки")),
                             () -> logger.atWarn().addKeyValue("url", url).log("Ссылка не найдена"));
         });
-
         logger.atInfo().log("Проверка обновлений завершена");
     }
 

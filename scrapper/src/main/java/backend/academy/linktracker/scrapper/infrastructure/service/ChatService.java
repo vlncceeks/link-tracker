@@ -13,6 +13,10 @@ public class ChatService {
     private final ChatRepository chatRepository;
 
     public void register(Long id) {
+        if (chatRepository.exists(id)) {
+            logger.atInfo().addKeyValue("chatId", id).log("Chat already registered");
+            return;
+        }
         logger.atInfo().addKeyValue("chatId", id).log("Chat registration");
         chatRepository.register(id);
     }

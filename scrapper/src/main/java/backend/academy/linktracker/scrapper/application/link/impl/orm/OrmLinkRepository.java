@@ -38,6 +38,11 @@ public class OrmLinkRepository implements LinkRepository {
     }
 
     @Override
+    public TrackedLink update(TrackedLink link) {
+        return repository.save(link);
+    }
+
+    @Override
     public List<TrackedLink> findAll(Long chatId) {
         List<TrackedLink> links = new ArrayList<>();
         int pageSize = 1000;

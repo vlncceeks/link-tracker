@@ -47,6 +47,13 @@ public class InMemoryLinkRepository implements LinkRepository, Clearable {
     }
 
     @Override
+    public TrackedLink update(TrackedLink link) {
+        if (!chatRepository.exists(link.getChatId())) throw new ChatNotFoundException(link.getChatId());
+        storage.get(link.getChatId()).put(link.getUrl(), link);
+        return storage.get(link.getChatId()).get(link.getUrl());
+    }
+
+    @Override
     public List<TrackedLink> findAll(Long chatId) {
         if (!storage.containsKey(chatId)) return List.of();
         return new ArrayList<>(storage.get(chatId).values());

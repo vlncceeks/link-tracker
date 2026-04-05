@@ -11,7 +11,7 @@ import backend.academy.linktracker.scrapper.application.client.BotClient;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
-import backend.academy.linktracker.scrapper.application.service.LinkUpdateChecker;
+import backend.academy.linktracker.scrapper.infrastructure.service.LinkUpdateChecker;
 import backend.academy.linktracker.scrapper.infrastructure.scheduler.LinkUpdateScheduler;
 import java.time.Instant;
 import java.util.List;

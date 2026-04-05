@@ -11,6 +11,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 public interface LinkSpringRepository
         extends CrudRepository<TrackedLink, Integer>, PagingAndSortingRepository<TrackedLink, Integer> {
+
     Optional<TrackedLink> findByChatIdAndUrl(Long chatId, String url);
 
     Page<TrackedLink> findAllByChatId(Long chatId, Pageable pageable);

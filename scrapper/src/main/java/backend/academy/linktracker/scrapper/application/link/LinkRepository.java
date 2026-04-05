@@ -12,6 +12,8 @@ public interface LinkRepository {
 
     Optional<TrackedLink> find(Long chatId, String url);
 
+    TrackedLink update(TrackedLink link);
+
     List<TrackedLink> findAll(Long chatId);
 
     Map<String, List<Long>> getAllLinksWithChats();

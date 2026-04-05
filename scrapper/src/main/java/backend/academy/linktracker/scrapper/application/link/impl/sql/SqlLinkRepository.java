@@ -62,6 +62,16 @@ public class SqlLinkRepository implements LinkRepository {
     }
 
     @Override
+    public TrackedLink update(TrackedLink link) {
+        return jdbcClient
+                .sql("UPDATE tracked_links SET last_checked_at = :lastCheckedAt WHERE id = :linkId")
+                .param("lastCheckedAt", link.getLastCheckedAt())
+                .param("linkId", link.getId())
+                .query(this::mapRow)
+                .single();
+    }
+
+    @Override
     public List<TrackedLink> findAll(Long chatId) {
         int pageSize = 1000;
         long lastId = 0;

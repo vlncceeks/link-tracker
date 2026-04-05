@@ -1,4 +1,4 @@
-package backend.academy.linktracker.scrapper.application.service;
+package backend.academy.linktracker.scrapper.infrastructure.service;
 
 public enum LinkType {
     GITHUB,
