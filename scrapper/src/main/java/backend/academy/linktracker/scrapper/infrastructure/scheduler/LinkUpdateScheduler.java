@@ -2,8 +2,10 @@ package backend.academy.linktracker.scrapper.infrastructure.scheduler;
 
 import backend.academy.linktracker.scrapper.application.client.MessageSender;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
+import backend.academy.linktracker.scrapper.application.dto.response.LinksPage;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
+import backend.academy.linktracker.scrapper.infrastructure.configuration.SchedulerProperties;
 import backend.academy.linktracker.scrapper.infrastructure.service.LinkUpdateChecker;
 import java.util.List;
 import java.util.Map;
@@ -23,32 +25,38 @@ public class LinkUpdateScheduler {
     private final LinkRepository linkRepository;
     private final MessageSender messageSender;
     private final List<LinkUpdateChecker> checkers;
+    private final SchedulerProperties properties;
 
     @Scheduled(fixedDelayString = "${app.scheduler.interval}")
     public void checkUpdates() {
-        Map<String, List<Long>> allLinks = linkRepository.getAllLinksWithChats();
+        long lastId = 0;
 
-        if (allLinks.isEmpty()) {
-            logger.atDebug().log("Нет ссылок для проверки");
-            return;
-        }
+        while (true) {
+            LinksPage page = linkRepository.getLinksWithChats(properties.batchSize(), lastId);
 
-        allLinks.forEach((url, chatIds) -> {
-            if (chatIds.isEmpty()) {
-                logger.atWarn().addKeyValue("url", url).log("Ссылка без чатов, пропускаем");
-                return;
-            }
-            Long firstChatId = chatIds.getFirst();
-            linkRepository
+            if (page.links().isEmpty()) break;
+
+            page.links().forEach((url, chatIds) -> {
+                if (chatIds.isEmpty()) {
+                    logger.atWarn().addKeyValue("url", url).log("Ссылка без чатов, пропускаем");
+                    return;
+                }
+                Long firstChatId = chatIds.getFirst();
+                linkRepository
                     .find(firstChatId, url)
                     .ifPresentOrElse(
-                            link -> findChecker(url)
-                                    .ifPresentOrElse(
-                                            checker -> processLink(checker, link, chatIds),
-                                            () -> logger.atWarn().addKeyValue("url", url)
-                                                    .log("Нет подходящего чекера для ссылки")),
-                            () -> logger.atWarn().addKeyValue("url", url).log("Ссылка не найдена"));
-        });
+                        link -> findChecker(url)
+                            .ifPresentOrElse(
+                                checker -> processLink(checker, link, chatIds),
+                                () -> logger.atWarn().addKeyValue("url", url)
+                                    .log("Нет подходящего чекера для ссылки")),
+                        () -> logger.atWarn().addKeyValue("url", url).log("Ссылка не найдена"));
+            });
+
+            lastId = page.lastId();
+            if (page.links().size() < properties.batchSize()) break;
+        }
+
         logger.atInfo().log("Проверка обновлений завершена");
     }
 

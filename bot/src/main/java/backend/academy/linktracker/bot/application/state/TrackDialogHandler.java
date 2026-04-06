@@ -28,7 +28,7 @@ public class TrackDialogHandler {
         if (text.equals("/cancel")) {
             deleteSession(chatId);
             logger.atInfo().addKeyValue("chatId", chatId).log("Диалог /track отменён");
-            return "Отслеживание отменено.";
+            return "Операция отменена.";
         }
 
         return switch (session.getState()) {

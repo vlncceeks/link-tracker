@@ -27,7 +27,9 @@ public interface LinkSpringRepository
         ORDER BY tl.id
         LIMIT :limit
         """)
-    List<LinkWithTagRow> findAllWithTagsByChatIdKeySet(Long chatId, int lastId, int limit);
+    List<LinkWithTagRow> findAllWithTagsByChatIdKeySet(Long chatId, long lastId, int limit);
 
     Page<TrackedLink> findAll(Pageable pageable);
+
+    List<TrackedLink> findByIdGreaterThanOrderByIdAsc(Long id, Pageable pageable);
 }

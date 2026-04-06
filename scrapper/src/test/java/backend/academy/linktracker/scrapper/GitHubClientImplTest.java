@@ -5,11 +5,20 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 import backend.academy.linktracker.scrapper.application.client.impl.GitHubClientImpl;
+import backend.academy.linktracker.scrapper.application.dto.GitHubActor;
+import backend.academy.linktracker.scrapper.application.dto.GitHubEventPayload;
+import backend.academy.linktracker.scrapper.application.dto.GitHubIssue;
+import backend.academy.linktracker.scrapper.application.dto.response.GitHubEventResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.GitHubRepositoryResponse;
+import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import backend.academy.linktracker.scrapper.infrastructure.configuration.GithubProperties;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,4 +94,5 @@ public class GitHubClientImplTest {
 
         assertThat(result).isEmpty();
     }
+
 }

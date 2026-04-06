@@ -33,27 +33,15 @@ public class SqlLinkTagRepository implements LinkTagRepository {
     }
 
     @Override
-    public List<Integer> findTagIdsByLinkId(Integer linkId) {
-        List<Integer> ids = new ArrayList<>();
-        int pageSize = 1000;
-        long lastId = 0;
+    public List<Integer> findTagIdsByLinkId(Integer linkId, int limit, long lastId) {
         String sql = "SELECT id, tag_id FROM link_tags WHERE link_id = ? AND id > ? ORDER BY id LIMIT ?";
 
-        while (true) {
-            List<int[]> page = jdbcTemplate.query(
-                    sql,
-                    (rs, rowNum) -> new int[] {(int) rs.getLong("id"), rs.getInt("tag_id")},
-                    linkId,
-                    lastId,
-                    pageSize);
+        List<int[]> rows = jdbcTemplate.query(
+            sql,
+            (rs, rowNum) -> new int[]{(int) rs.getLong("id"), rs.getInt("tag_id")},
+            linkId, lastId, limit);
 
-            if (page.isEmpty()) break;
-            page.forEach(row -> ids.add(row[1]));
-            lastId = page.getLast()[0];
-            if (page.size() < pageSize) break;
-        }
-
-        return ids;
+        return rows.stream().map(row -> row[1]).toList();
     }
 
     @Override

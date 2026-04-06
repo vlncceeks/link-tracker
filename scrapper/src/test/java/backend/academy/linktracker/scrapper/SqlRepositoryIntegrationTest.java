@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import backend.academy.linktracker.scrapper.application.chat.impl.sql.SqlChatRepository;
+import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import backend.academy.linktracker.scrapper.application.link.impl.sql.SqlLinkRepository;
@@ -107,15 +108,15 @@ public class SqlRepositoryIntegrationTest {
     }
 
     @Test
-    void findAll_returnsAllLinksForChat() {
+    void findAllWithTags_returnsAllLinksForChat() {
         String url2 = "https://stackoverflow.com/questions/12345/title";
         linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL));
         linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, url2));
 
-        List<TrackedLink> links = linkRepository.findAll(CHAT_ID);
+        List<LinkResponse> links = linkRepository.findAllWithTags(CHAT_ID, 100, 0);
 
         assertThat(links).hasSize(2);
-        assertThat(links).extracting(TrackedLink::getUrl).containsExactlyInAnyOrder(URL, url2);
+        assertThat(links).extracting(LinkResponse::url).containsExactlyInAnyOrder(URL, url2);
     }
 
     @Test
@@ -128,7 +129,7 @@ public class SqlRepositoryIntegrationTest {
         linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL));
         linkRepository.add(chatId2, new TrackedLink(null, CHAT_ID, URL));
 
-        Map<String, List<Long>> result = linkRepository.getAllLinksWithChats();
+        Map<String, List<Long>> result = linkRepository.getLinksWithChats(100, 0).links();
 
         assertThat(result).containsKey(URL);
         assertThat(result.get(URL)).containsExactlyInAnyOrder(CHAT_ID, chatId2);
