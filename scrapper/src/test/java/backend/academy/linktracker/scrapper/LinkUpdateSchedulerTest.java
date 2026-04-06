@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import backend.academy.linktracker.scrapper.application.client.BotClient;
+import backend.academy.linktracker.scrapper.application.client.MessageSender;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
@@ -30,7 +30,7 @@ public class LinkUpdateSchedulerTest {
     private LinkRepository linkRepository;
 
     @Mock
-    private BotClient botClient;
+    private MessageSender messageSender;
 
     @Mock
     private LinkUpdateChecker checker;
@@ -43,7 +43,7 @@ public class LinkUpdateSchedulerTest {
 
     @BeforeEach
     void setUp() {
-        scheduler = new LinkUpdateScheduler(linkRepository, botClient, List.of(checker));
+        scheduler = new LinkUpdateScheduler(linkRepository, messageSender, List.of(checker));
     }
 
     @Test
@@ -58,10 +58,10 @@ public class LinkUpdateSchedulerTest {
 
         scheduler.checkUpdates();
 
-        verify(botClient, times(1)).sendUpdate(any(LinkUpdateRequest.class));
-        verify(botClient)
-                .sendUpdate(argThat(req -> req.tgChatIds().containsAll(List.of(CHAT_ID_1, CHAT_ID_2))
-                        && req.tgChatIds().size() == 2
+        verify(messageSender, times(1)).send(any(LinkUpdateRequest.class));
+        verify(messageSender)
+                .send(argThat(req -> req.chatIds().containsAll(List.of(CHAT_ID_1, CHAT_ID_2))
+                        && req.chatIds().size() == 2
                         && req.url().equals(URL)));
     }
 
@@ -77,7 +77,7 @@ public class LinkUpdateSchedulerTest {
 
         scheduler.checkUpdates();
 
-        verifyNoInteractions(botClient);
+        verifyNoInteractions(messageSender);
     }
 
     @Test
@@ -86,7 +86,7 @@ public class LinkUpdateSchedulerTest {
 
         scheduler.checkUpdates();
 
-        verifyNoInteractions(botClient);
+        verifyNoInteractions(messageSender);
         verifyNoInteractions(checker);
     }
 
@@ -102,6 +102,6 @@ public class LinkUpdateSchedulerTest {
 
         scheduler.checkUpdates();
 
-        verifyNoInteractions(botClient);
+        verifyNoInteractions(messageSender);
     }
 }

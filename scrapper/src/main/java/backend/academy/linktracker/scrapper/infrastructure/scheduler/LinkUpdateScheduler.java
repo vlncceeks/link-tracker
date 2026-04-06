@@ -1,6 +1,6 @@
 package backend.academy.linktracker.scrapper.infrastructure.scheduler;
 
-import backend.academy.linktracker.scrapper.application.client.BotClient;
+import backend.academy.linktracker.scrapper.application.client.MessageSender;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
@@ -21,7 +21,7 @@ public class LinkUpdateScheduler {
     private static final Logger logger = LoggerFactory.getLogger(LinkUpdateScheduler.class);
 
     private final LinkRepository linkRepository;
-    private final BotClient botClient;
+    private final MessageSender messageSender;
     private final List<LinkUpdateChecker> checkers;
 
     @Scheduled(fixedDelayString = "${app.scheduler.interval}")
@@ -64,7 +64,7 @@ public class LinkUpdateScheduler {
                         .addKeyValue("chatCount", chatIds.size())
                         .log("Обнаружено обновление, отправляем уведомление");
 
-                botClient.sendUpdate(new LinkUpdateRequest(link.getId(), link.getUrl(), description, chatIds));
+                messageSender.send(new LinkUpdateRequest(link.getId(), link.getUrl(), description, chatIds));
             });
         } catch (Exception e) {
             logger.atError().addKeyValue("url", link.getUrl()).setCause(e).log("Ошибка при проверке ссылки");
