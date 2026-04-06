@@ -8,5 +8,6 @@ import java.util.Optional;
 
 public interface GitHubClient {
     Optional<GitHubRepositoryResponse> fetchRepository(String owner, String repo);
+
     List<GitHubEventResponse> fetchEvents(String owner, String repo, Instant since);
 }

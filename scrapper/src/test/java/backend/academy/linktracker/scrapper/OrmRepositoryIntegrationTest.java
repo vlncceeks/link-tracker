@@ -122,7 +122,8 @@ public class OrmRepositoryIntegrationTest {
         linkRepository.add(CHAT_ID, new TrackedLink(null, CHAT_ID, URL));
         linkRepository.add(chatId2, new TrackedLink(null, CHAT_ID, URL));
 
-        Map<String, List<Long>> result = linkRepository.getLinksWithChats(100, 0).links();
+        Map<String, List<Long>> result =
+                linkRepository.getLinksWithChats(100, 0).links();
 
         assertThat(result).containsKey(URL);
         assertThat(result.get(URL)).containsExactlyInAnyOrder(CHAT_ID, chatId2);

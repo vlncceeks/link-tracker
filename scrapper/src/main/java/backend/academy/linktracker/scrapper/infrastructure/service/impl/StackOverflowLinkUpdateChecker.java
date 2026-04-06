@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 
 @Component
 @RequiredArgsConstructor
@@ -31,52 +32,65 @@ public class StackOverflowLinkUpdateChecker implements LinkUpdateChecker {
 
     @Override
     public Optional<String> check(TrackedLink link) {
-        return StackOverflowClientImpl.parseUrl(link.getUrl())
-                .flatMap(questionId -> {
-                    var question = stackOverflowClient.fetchQuestion(questionId);
-                    var answers = stackOverflowClient.fetchAnswers(questionId, link.getLastCheckedAt());
-                    var comments = stackOverflowClient.fetchComments(questionId, link.getLastCheckedAt());
+        return StackOverflowClientImpl.parseUrl(link.getUrl()).flatMap(questionId -> {
+            try {
+                var question = stackOverflowClient.fetchQuestion(questionId);
+                var answers = stackOverflowClient.fetchAnswers(questionId, link.getLastCheckedAt());
+                var comments = stackOverflowClient.fetchComments(questionId, link.getLastCheckedAt());
 
-                    if (answers.isEmpty() && comments.isEmpty()) return Optional.empty();
+                if (answers.isEmpty() && comments.isEmpty()) return Optional.empty();
 
-                    logger.atDebug()
+                link.setLastCheckedAt(Instant.now());
+                linkRepository.update(link);
+                String title = question.map(q -> q.title()).orElse(link.getUrl());
+                return Optional.of(buildMessage(title, answers, comments));
+            } catch (RestClientException e) {
+                logger.atWarn()
                         .addKeyValue("url", link.getUrl())
-                        .addKeyValue("lastCheckedAt", link.getLastCheckedAt())
-                        .log("Проверка StackOverflow вопроса");
-
-                    link.setLastCheckedAt(Instant.now());
-                    linkRepository.update(link);
-                    String title = question.map(q -> q.title()).orElse(link.getUrl());
-                    return Optional.of(buildMessage(title, answers, comments));
-                });
+                        .addKeyValue("error", e.getMessage())
+                        .log("Ошибка при обращении к StackOverflow API");
+                return Optional.empty();
+            }
+        });
     }
 
     private String buildMessage(
-        String questionTitle,
-        List<StackOverflowAnswerResponse.AnswerItem> answers,
-        List<StackOverflowCommentResponse.CommentItem> comments
-    ) {
+            String questionTitle,
+            List<StackOverflowAnswerResponse.AnswerItem> answers,
+            List<StackOverflowCommentResponse.CommentItem> comments) {
         StringBuilder sb = new StringBuilder();
         sb.append("Вопрос: ").append(questionTitle).append("\n\n");
 
         for (var answer : answers) {
             String preview = answer.body() != null && answer.body().length() > 200
-                ? answer.body().substring(0, 197) + "..."
-                : answer.body();
+                    ? answer.body().substring(0, 197) + "..."
+                    : answer.body();
             sb.append("Новый ответ\n")
-                .append("Автор: ").append(answer.owner().displayName()).append("\n")
-                .append("Время: ").append(answer.creationDate()).append("\n")
-                .append("Превью: ").append(preview).append("\n\n");
+                    .append("Автор: ")
+                    .append(answer.owner().displayName())
+                    .append("\n")
+                    .append("Время: ")
+                    .append(answer.creationDate())
+                    .append("\n")
+                    .append("Превью: ")
+                    .append(preview)
+                    .append("\n\n");
         }
 
         for (var comment : comments) {
             String preview = comment.body() != null && comment.body().length() > 200
-                ? comment.body().substring(0, 197) + "..."
-                : comment.body();
+                    ? comment.body().substring(0, 197) + "..."
+                    : comment.body();
             sb.append("Новый комментарий\n")
-                .append("Автор: ").append(comment.owner().displayName()).append("\n")
-                .append("Время: ").append(comment.creationDate()).append("\n")
-                .append("Превью: ").append(preview).append("\n\n");
+                    .append("Автор: ")
+                    .append(comment.owner().displayName())
+                    .append("\n")
+                    .append("Время: ")
+                    .append(comment.creationDate())
+                    .append("\n")
+                    .append("Превью: ")
+                    .append(preview)
+                    .append("\n\n");
         }
 
         return sb.toString().trim();

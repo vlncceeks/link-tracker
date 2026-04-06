@@ -66,32 +66,32 @@ public class GitHubClientImpl implements GitHubClient {
         logger.atDebug().addKeyValue("owner", owner).addKeyValue("repo", repo).log("Запрос к Github API");
         try {
             GitHubEventResponse[] response = restClient
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/repos/{owner}/{repo}/events")
-                    .queryParam("per_page", 100)
-                    .build(owner, repo))
-                .retrieve()
-                .body(GitHubEventResponse[].class);
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/repos/{owner}/{repo}/events")
+                            .queryParam("per_page", 100)
+                            .build(owner, repo))
+                    .retrieve()
+                    .body(GitHubEventResponse[].class);
 
             if (response == null) return List.of();
 
             return Arrays.stream(response)
-                .filter(e -> e.createdAt().isAfter(since))
-                .toList();
+                    .filter(e -> e.createdAt().isAfter(since))
+                    .toList();
         } catch (RestClientResponseException e) {
             logger.atWarn()
-                .addKeyValue("owner", owner)
-                .addKeyValue("repo", repo)
-                .addKeyValue("status", e.getStatusCode())
-                .log("Github API return Error");
+                    .addKeyValue("owner", owner)
+                    .addKeyValue("repo", repo)
+                    .addKeyValue("status", e.getStatusCode())
+                    .log("Github API return Error");
             return List.of();
         } catch (RestClientException e) {
             logger.atWarn()
-                .addKeyValue("owner", owner)
-                .addKeyValue("repo", repo)
-                .addKeyValue("error", e.getMessage())
-                .log("Error when receiving GitHub response");
+                    .addKeyValue("owner", owner)
+                    .addKeyValue("repo", repo)
+                    .addKeyValue("error", e.getMessage())
+                    .log("Error when receiving GitHub response");
             return List.of();
         }
     }

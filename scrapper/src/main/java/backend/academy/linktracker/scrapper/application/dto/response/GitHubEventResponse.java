@@ -6,9 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 
 public record GitHubEventResponse(
-    String id,
-    String type,
-    GitHubActor actor,
-    GitHubEventPayload payload,
-    @JsonProperty("created_at") Instant createdAt
-) {}
+        String id,
+        String type,
+        GitHubActor actor,
+        GitHubEventPayload payload,
+        @JsonProperty("created_at") Instant createdAt) {}

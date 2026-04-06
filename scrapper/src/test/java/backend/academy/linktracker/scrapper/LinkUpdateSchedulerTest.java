@@ -1,6 +1,7 @@
 package backend.academy.linktracker.scrapper;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -13,8 +14,8 @@ import backend.academy.linktracker.scrapper.application.dto.response.LinksPage;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import backend.academy.linktracker.scrapper.infrastructure.configuration.SchedulerProperties;
-import backend.academy.linktracker.scrapper.infrastructure.service.LinkUpdateChecker;
 import backend.academy.linktracker.scrapper.infrastructure.scheduler.LinkUpdateScheduler;
+import backend.academy.linktracker.scrapper.infrastructure.service.LinkUpdateChecker;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,6 @@ public class LinkUpdateSchedulerTest {
         LinksPage emptyPage = new LinksPage(Map.of(), 1L);
 
         when(linkRepository.getLinksWithChats(100, 0L)).thenReturn(page);
-        when(linkRepository.getLinksWithChats(100, 1L)).thenReturn(emptyPage);
         when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link));
         when(checker.supports(URL)).thenReturn(true);
         when(checker.check(link)).thenReturn(Optional.of("Новый коммит"));
@@ -69,9 +69,9 @@ public class LinkUpdateSchedulerTest {
 
         verify(messageSender, times(1)).send(any(LinkUpdateRequest.class));
         verify(messageSender)
-            .send(argThat(req -> req.chatIds().containsAll(List.of(CHAT_ID_1, CHAT_ID_2))
-                && req.chatIds().size() == 2
-                && req.url().equals(URL)));
+                .send(argThat(req -> req.chatIds().containsAll(List.of(CHAT_ID_1, CHAT_ID_2))
+                        && req.chatIds().size() == 2
+                        && req.url().equals(URL)));
     }
 
     @Test
@@ -83,7 +83,6 @@ public class LinkUpdateSchedulerTest {
         LinksPage emptyPage = new LinksPage(Map.of(), 1L);
 
         when(linkRepository.getLinksWithChats(100, 0L)).thenReturn(page);
-        when(linkRepository.getLinksWithChats(100, 1L)).thenReturn(emptyPage);
         when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link));
         when(checker.supports(URL)).thenReturn(true);
         when(checker.check(link)).thenReturn(Optional.empty());
@@ -113,7 +112,6 @@ public class LinkUpdateSchedulerTest {
         LinksPage emptyPage = new LinksPage(Map.of(), 1L);
 
         when(linkRepository.getLinksWithChats(100, 0L)).thenReturn(page);
-        when(linkRepository.getLinksWithChats(100, 1L)).thenReturn(emptyPage);
         when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link));
         when(checker.supports(URL)).thenReturn(true);
         when(checker.check(link)).thenThrow(new RuntimeException("Сеть недоступна"));
@@ -123,4 +121,48 @@ public class LinkUpdateSchedulerTest {
         verifyNoInteractions(messageSender);
     }
 
+    @Test
+    void checkUpdates_batchProcessed_allLinksHandled() {
+        String url2 = "https://github.com/user/repo2";
+        TrackedLink link1 = new TrackedLink(1, CHAT_ID_1, URL);
+        TrackedLink link2 = new TrackedLink(2, CHAT_ID_1, url2);
+        link1.setLastCheckedAt(Instant.now().minusSeconds(3600));
+        link2.setLastCheckedAt(Instant.now().minusSeconds(3600));
+
+        LinksPage page = new LinksPage(Map.of(URL, List.of(CHAT_ID_1), url2, List.of(CHAT_ID_1)), 2L);
+        LinksPage emptyPage = new LinksPage(Map.of(), 2L);
+
+        when(linkRepository.getLinksWithChats(100, 0L)).thenReturn(page);
+        when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link1));
+        when(linkRepository.find(CHAT_ID_1, url2)).thenReturn(Optional.of(link2));
+        when(checker.supports(anyString())).thenReturn(true);
+        when(checker.check(any())).thenReturn(Optional.of("Обновление"));
+
+        scheduler.checkUpdates();
+
+        verify(messageSender, times(2)).send(any(LinkUpdateRequest.class));
+    }
+
+    @Test
+    void checkUpdates_oneLinkFails_othersStillProcessed() {
+        String url2 = "https://github.com/user/repo2";
+        TrackedLink link1 = new TrackedLink(1, CHAT_ID_1, URL);
+        TrackedLink link2 = new TrackedLink(2, CHAT_ID_1, url2);
+        link1.setLastCheckedAt(Instant.now().minusSeconds(3600));
+        link2.setLastCheckedAt(Instant.now().minusSeconds(3600));
+
+        LinksPage page = new LinksPage(Map.of(URL, List.of(CHAT_ID_1), url2, List.of(CHAT_ID_1)), 2L);
+        LinksPage emptyPage = new LinksPage(Map.of(), 2L);
+
+        when(linkRepository.getLinksWithChats(100, 0L)).thenReturn(page);
+        when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link1));
+        when(linkRepository.find(CHAT_ID_1, url2)).thenReturn(Optional.of(link2));
+        when(checker.supports(anyString())).thenReturn(true);
+        when(checker.check(link1)).thenThrow(new RuntimeException("Сеть недоступна"));
+        when(checker.check(link2)).thenReturn(Optional.of("Обновление"));
+
+        scheduler.checkUpdates();
+
+        verify(messageSender, times(1)).send(any(LinkUpdateRequest.class));
+    }
 }

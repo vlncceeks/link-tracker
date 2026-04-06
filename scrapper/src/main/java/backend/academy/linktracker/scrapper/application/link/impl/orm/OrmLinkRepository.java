@@ -5,16 +5,13 @@ import backend.academy.linktracker.scrapper.application.dto.response.LinksPage;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
@@ -51,7 +48,8 @@ public class OrmLinkRepository implements LinkRepository {
 
         if (rows.isEmpty()) return new LinksPage(Map.of(), lastId);
 
-        rows.forEach(link -> result.computeIfAbsent(link.getUrl(), k -> new ArrayList<>()).add(link.getChatId()));
+        rows.forEach(link ->
+                result.computeIfAbsent(link.getUrl(), k -> new ArrayList<>()).add(link.getChatId()));
 
         return new LinksPage(result, rows.getLast().getId());
     }
@@ -61,17 +59,18 @@ public class OrmLinkRepository implements LinkRepository {
         List<LinkWithTagRow> rows = repository.findAllWithTagsByChatIdKeySet(chatId, lastId, limit);
 
         Map<Integer, List<LinkWithTagRow>> grouped = new LinkedHashMap<>();
-        rows.forEach(row -> grouped.computeIfAbsent(row.id(), k -> new ArrayList<>()).add(row));
+        rows.forEach(
+                row -> grouped.computeIfAbsent(row.id(), k -> new ArrayList<>()).add(row));
 
         return grouped.entrySet().stream()
-            .map(e -> {
-                List<LinkWithTagRow> linkRows = e.getValue();
-                List<String> tags = linkRows.stream()
-                    .map(LinkWithTagRow::tagName)
-                    .filter(Objects::nonNull)
-                    .toList();
-                return new LinkResponse(e.getKey(), linkRows.getFirst().url(), tags, List.of());
-            })
-            .toList();
+                .map(e -> {
+                    List<LinkWithTagRow> linkRows = e.getValue();
+                    List<String> tags = linkRows.stream()
+                            .map(LinkWithTagRow::tagName)
+                            .filter(Objects::nonNull)
+                            .toList();
+                    return new LinkResponse(e.getKey(), linkRows.getFirst().url(), tags, List.of());
+                })
+                .toList();
     }
 }

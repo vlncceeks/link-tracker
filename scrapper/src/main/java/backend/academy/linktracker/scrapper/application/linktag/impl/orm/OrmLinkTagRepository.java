@@ -26,10 +26,10 @@ public class OrmLinkTagRepository implements LinkTagRepository {
     @Override
     public List<Integer> findTagIdsByLinkId(Integer linkId, int limit, long lastId) {
         return linkTagSpringRepository
-            .findAllByLinkIdAndIdGreaterThan(linkId, lastId, PageRequest.of(0, limit, Sort.by("id")))
-            .stream()
-            .map(LinkTag::getTagId)
-            .toList();
+                .findAllByLinkIdAndIdGreaterThan(linkId, lastId, PageRequest.of(0, limit, Sort.by("id")))
+                .stream()
+                .map(LinkTag::getTagId)
+                .toList();
     }
 
     @Override

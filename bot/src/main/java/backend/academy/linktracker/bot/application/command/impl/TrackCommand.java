@@ -4,7 +4,6 @@ import backend.academy.linktracker.bot.application.command.Command;
 import backend.academy.linktracker.bot.application.state.TrackCommandType;
 import backend.academy.linktracker.bot.application.state.TrackSession;
 import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
-import backend.academy.linktracker.bot.application.state.TrackState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

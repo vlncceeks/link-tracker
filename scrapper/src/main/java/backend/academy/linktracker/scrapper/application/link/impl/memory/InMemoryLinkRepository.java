@@ -58,9 +58,9 @@ public class InMemoryLinkRepository implements LinkRepository, Clearable {
     @Override
     public LinksPage getLinksWithChats(int limit, long lastId) {
         Map<String, List<Long>> result = new LinkedHashMap<>();
-        storage.forEach((chatId, links) ->
-            links.keySet().forEach(url ->
-                result.computeIfAbsent(url, k -> new ArrayList<>()).add(chatId)));
+        storage.forEach(
+                (chatId, links) -> links.keySet().forEach(url -> result.computeIfAbsent(url, k -> new ArrayList<>())
+                        .add(chatId)));
         return new LinksPage(result, 0);
     }
 

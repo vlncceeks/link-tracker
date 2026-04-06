@@ -29,20 +29,23 @@ public class StackOverflowClientImpl implements StackOverflowClient {
 
     public StackOverflowClientImpl(StackoverflowProperties properties) {
         this.restClient = RestClient.builder()
-            .baseUrl(properties.getBaseUrl())
-            .requestInterceptor((request, body, execution) -> {
-                URI withParams = UriComponentsBuilder.fromUri(request.getURI())
-                    .queryParam("site", "stackoverflow")
-                    .queryParam("key", properties.getKey())
-                    .build().toUri();
-                return execution.execute(new HttpRequestWrapper(request) {
-                    @Override
-                    public URI getURI() {
-                        return withParams;
-                    }
-                }, body);
-            })
-            .build();
+                .baseUrl(properties.getBaseUrl())
+                .requestInterceptor((request, body, execution) -> {
+                    URI withParams = UriComponentsBuilder.fromUri(request.getURI())
+                            .queryParam("site", "stackoverflow")
+                            .queryParam("key", properties.getKey())
+                            .build()
+                            .toUri();
+                    return execution.execute(
+                            new HttpRequestWrapper(request) {
+                                @Override
+                                public URI getURI() {
+                                    return withParams;
+                                }
+                            },
+                            body);
+                })
+                .build();
     }
 
     @Override
@@ -75,22 +78,22 @@ public class StackOverflowClientImpl implements StackOverflowClient {
     public List<StackOverflowAnswerResponse.AnswerItem> fetchAnswers(Long questionId, Instant since) {
         try {
             StackOverflowAnswerResponse response = restClient
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/questions/{id}/answers")
-                    .queryParam("site", "stackoverflow")
-                    .queryParam("filter", "withbody")
-                    .queryParam("sort", "creation")
-                    .queryParam("order", "desc")
-                    .build(questionId))
-                .retrieve()
-                .body(StackOverflowAnswerResponse.class);
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/questions/{id}/answers")
+                            .queryParam("site", "stackoverflow")
+                            .queryParam("filter", "withbody")
+                            .queryParam("sort", "creation")
+                            .queryParam("order", "desc")
+                            .build(questionId))
+                    .retrieve()
+                    .body(StackOverflowAnswerResponse.class);
 
             if (response == null) return List.of();
 
             return response.items().stream()
-                .filter(a -> a.creationDate().isAfter(since))
-                .toList();
+                    .filter(a -> a.creationDate().isAfter(since))
+                    .toList();
         } catch (RestClientException e) {
             logger.atWarn().addKeyValue("questionId", questionId).log("Ошибка получения ответов SO");
             return List.of();
@@ -100,27 +103,26 @@ public class StackOverflowClientImpl implements StackOverflowClient {
     public List<StackOverflowCommentResponse.CommentItem> fetchComments(Long questionId, Instant since) {
         try {
             StackOverflowCommentResponse response = restClient
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/questions/{id}/answers")
-                    .queryParam("filter", "withbody")
-                    .queryParam("sort", "creation")
-                    .queryParam("order", "desc")
-                    .build(questionId))
-                .retrieve()
-                .body(StackOverflowCommentResponse.class);
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/questions/{id}/answers")
+                            .queryParam("filter", "withbody")
+                            .queryParam("sort", "creation")
+                            .queryParam("order", "desc")
+                            .build(questionId))
+                    .retrieve()
+                    .body(StackOverflowCommentResponse.class);
 
             if (response == null) return List.of();
 
             return response.items().stream()
-                .filter(a -> a.creationDate().isAfter(since))
-                .toList();
+                    .filter(a -> a.creationDate().isAfter(since))
+                    .toList();
         } catch (RestClientException e) {
             logger.atWarn().addKeyValue("questionId", questionId).log("Ошибка получения ответов SO");
             return List.of();
         }
     }
-
 
     public static Optional<Long> parseUrl(String url) {
         Matcher matcher = SO_URL.matcher(url);

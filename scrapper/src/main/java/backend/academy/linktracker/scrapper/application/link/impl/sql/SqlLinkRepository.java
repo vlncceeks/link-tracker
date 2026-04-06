@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,16 +77,16 @@ public class SqlLinkRepository implements LinkRepository {
         Map<String, List<Long>> result = new LinkedHashMap<>();
 
         List<Row> rows = jdbcClient
-            .sql("SELECT id, url, chat_id FROM tracked_links WHERE id > :lastId ORDER BY id LIMIT :limit")
-            .param("lastId", lastId)
-            .param("limit", limit)
-            .query((rs, rowNum) -> new Row(rs.getLong("id"), rs.getString("url"), rs.getLong("chat_id")))
-            .list();
+                .sql("SELECT id, url, chat_id FROM tracked_links WHERE id > :lastId ORDER BY id LIMIT :limit")
+                .param("lastId", lastId)
+                .param("limit", limit)
+                .query((rs, rowNum) -> new Row(rs.getLong("id"), rs.getString("url"), rs.getLong("chat_id")))
+                .list();
 
         if (rows.isEmpty()) return new LinksPage(Map.of(), lastId);
 
-        rows.forEach(row ->
-            result.computeIfAbsent(row.url(), k -> new ArrayList<>()).add(row.chatId()));
+        rows.forEach(
+                row -> result.computeIfAbsent(row.url(), k -> new ArrayList<>()).add(row.chatId()));
 
         return new LinksPage(result, rows.getLast().id());
     }
@@ -97,7 +96,7 @@ public class SqlLinkRepository implements LinkRepository {
         record Row(int linkId, String url, String tagName) {}
 
         List<Row> rows = jdbcClient
-            .sql("""
+                .sql("""
                 SELECT tl.id, tl.url, t.name as tag_name
                 FROM tracked_links tl
                 LEFT JOIN link_tags lt ON tl.id = lt.link_id
@@ -106,25 +105,26 @@ public class SqlLinkRepository implements LinkRepository {
                 ORDER BY tl.id
                 LIMIT :limit
                 """)
-            .param("chatId", chatId)
-            .param("lastId", lastId)
-            .param("limit", limit)
-            .query((rs, rowNum) -> new Row(rs.getInt("id"), rs.getString("url"), rs.getString("tag_name")))
-            .list();
+                .param("chatId", chatId)
+                .param("lastId", lastId)
+                .param("limit", limit)
+                .query((rs, rowNum) -> new Row(rs.getInt("id"), rs.getString("url"), rs.getString("tag_name")))
+                .list();
 
         Map<Integer, List<Row>> grouped = new LinkedHashMap<>();
-        rows.forEach(row -> grouped.computeIfAbsent(row.linkId(), k -> new ArrayList<>()).add(row));
+        rows.forEach(row ->
+                grouped.computeIfAbsent(row.linkId(), k -> new ArrayList<>()).add(row));
 
         return grouped.entrySet().stream()
-            .map(e -> {
-                List<Row> linkRows = e.getValue();
-                List<String> tags = linkRows.stream()
-                    .map(Row::tagName)
-                    .filter(Objects::nonNull)
-                    .toList();
-                return new LinkResponse(e.getKey(), linkRows.getFirst().url(), tags, List.of());
-            })
-            .toList();
+                .map(e -> {
+                    List<Row> linkRows = e.getValue();
+                    List<String> tags = linkRows.stream()
+                            .map(Row::tagName)
+                            .filter(Objects::nonNull)
+                            .toList();
+                    return new LinkResponse(e.getKey(), linkRows.getFirst().url(), tags, List.of());
+                })
+                .toList();
     }
 
     // Маппер строки БД => TrackedLink

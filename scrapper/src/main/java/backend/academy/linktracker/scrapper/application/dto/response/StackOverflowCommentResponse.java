@@ -6,12 +6,10 @@ import java.time.Instant;
 import java.util.List;
 
 public record StackOverflowCommentResponse(
-    @JsonProperty("items") List<CommentItem> items
-) {
+        @JsonProperty("items") List<CommentItem> items) {
     public record CommentItem(
-        @JsonProperty("comment_id") Long commentId,
-        @JsonProperty("owner") Owner owner,
-        @JsonProperty("creation_date") Instant creationDate,
-        @JsonProperty("body_markdown") String body
-    ) {}
+            @JsonProperty("comment_id") Long commentId,
+            @JsonProperty("owner") Owner owner,
+            @JsonProperty("creation_date") Instant creationDate,
+            @JsonProperty("body_markdown") String body) {}
 }

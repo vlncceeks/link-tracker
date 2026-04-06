@@ -37,9 +37,7 @@ public class SqlLinkTagRepository implements LinkTagRepository {
         String sql = "SELECT id, tag_id FROM link_tags WHERE link_id = ? AND id > ? ORDER BY id LIMIT ?";
 
         List<int[]> rows = jdbcTemplate.query(
-            sql,
-            (rs, rowNum) -> new int[]{(int) rs.getLong("id"), rs.getInt("tag_id")},
-            linkId, lastId, limit);
+                sql, (rs, rowNum) -> new int[] {(int) rs.getLong("id"), rs.getInt("tag_id")}, linkId, lastId, limit);
 
         return rows.stream().map(row -> row[1]).toList();
     }

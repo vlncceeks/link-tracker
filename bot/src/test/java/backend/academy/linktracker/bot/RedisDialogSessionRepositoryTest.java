@@ -1,8 +1,11 @@
 package backend.academy.linktracker.bot;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import backend.academy.linktracker.bot.application.state.TrackSession;
 import backend.academy.linktracker.bot.application.state.TrackState;
 import backend.academy.linktracker.bot.application.state.impl.RedisTrackSessionRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -12,25 +15,19 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import tools.jackson.databind.ObjectMapper;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 class RedisDialogSessionRepositoryTest {
 
     @Container
-    static GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine")
-        .withExposedPorts(6379);
+    static GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
 
     private RedisTrackSessionRepository repository;
 
     @BeforeEach
     void setUp() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(
-            redis.getHost(),
-            redis.getMappedPort(6379)
-        );
+        RedisStandaloneConfiguration config =
+                new RedisStandaloneConfiguration(redis.getHost(), redis.getMappedPort(6379));
         LettuceConnectionFactory connectionFactory = new LettuceConnectionFactory(config);
         connectionFactory.afterPropertiesSet();
 

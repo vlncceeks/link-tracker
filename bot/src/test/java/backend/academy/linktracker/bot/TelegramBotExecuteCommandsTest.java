@@ -38,8 +38,7 @@ public class TelegramBotExecuteCommandsTest {
     private TrackSessionRepository sessionRepository;
 
     @Container
-    static GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine")
-        .withExposedPorts(6379);
+    static GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
 
     private ListCommand listCommand;
     private TrackDialogHandler handler;
@@ -123,7 +122,7 @@ public class TelegramBotExecuteCommandsTest {
 
         Assertions.assertThat(response).containsIgnoringCase("некорректный");
         Assertions.assertThat(session.getState()).isEqualTo(TrackState.WAITING_FOR_URL);
-        Assertions.assertThat(session.getUrl()).isNull();
+        Assertions.assertThat(session.getUrl()).isEqualTo("");
         verifyNoInteractions(scrapperClient);
     }
 

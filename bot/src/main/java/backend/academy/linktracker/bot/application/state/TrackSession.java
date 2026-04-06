@@ -8,7 +8,7 @@ import lombok.Setter;
 public class TrackSession {
     private TrackState state;
     private TrackCommandType commandType;
-    private String url;
+    private String url = "";
 
     public TrackSession() {
         this.state = TrackState.WAITING_FOR_URL;

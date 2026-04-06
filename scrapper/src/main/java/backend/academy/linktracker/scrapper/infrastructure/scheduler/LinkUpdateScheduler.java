@@ -8,7 +8,6 @@ import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import backend.academy.linktracker.scrapper.infrastructure.configuration.SchedulerProperties;
 import backend.academy.linktracker.scrapper.infrastructure.service.LinkUpdateChecker;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -43,14 +42,14 @@ public class LinkUpdateScheduler {
                 }
                 Long firstChatId = chatIds.getFirst();
                 linkRepository
-                    .find(firstChatId, url)
-                    .ifPresentOrElse(
-                        link -> findChecker(url)
-                            .ifPresentOrElse(
-                                checker -> processLink(checker, link, chatIds),
-                                () -> logger.atWarn().addKeyValue("url", url)
-                                    .log("Нет подходящего чекера для ссылки")),
-                        () -> logger.atWarn().addKeyValue("url", url).log("Ссылка не найдена"));
+                        .find(firstChatId, url)
+                        .ifPresentOrElse(
+                                link -> findChecker(url)
+                                        .ifPresentOrElse(
+                                                checker -> processLink(checker, link, chatIds), () -> logger.atWarn()
+                                                        .addKeyValue("url", url)
+                                                        .log("Нет подходящего чекера для ссылки")),
+                                () -> logger.atWarn().addKeyValue("url", url).log("Ссылка не найдена"));
             });
 
             lastId = page.lastId();

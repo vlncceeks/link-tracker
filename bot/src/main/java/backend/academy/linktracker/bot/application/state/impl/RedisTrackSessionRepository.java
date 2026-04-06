@@ -2,13 +2,13 @@ package backend.academy.linktracker.bot.application.state.impl;
 
 import backend.academy.linktracker.bot.application.state.TrackSession;
 import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
+import java.time.Duration;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 import tools.jackson.databind.ObjectMapper;
-import java.time.Duration;
-import java.util.Optional;
 
 @Primary
 @Repository
@@ -26,9 +26,8 @@ public class RedisTrackSessionRepository implements TrackSessionRepository {
     @Override
     public Optional<TrackSession> find(Long chatId) {
         String data = redis.opsForValue().get("chat:" + chatId);
-        if (data == null) throw new IllegalStateException("Сессия не найдена");
-        TrackSession session = objectMapper.readValue(data, TrackSession.class);
-        return Optional.ofNullable(session);
+        if (data == null) return Optional.empty();
+        return Optional.ofNullable(objectMapper.readValue(data, TrackSession.class));
     }
 
     @Override

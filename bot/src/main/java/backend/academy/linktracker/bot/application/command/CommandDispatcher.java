@@ -1,7 +1,6 @@
 package backend.academy.linktracker.bot.application.command;
 
 import backend.academy.linktracker.bot.application.state.TrackDialogHandler;
-import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
@@ -15,10 +14,7 @@ public class CommandDispatcher {
     private final TelegramBot bot;
     private final TrackDialogHandler dialogHandler;
 
-    public CommandDispatcher(
-            CommandRepository repository,
-            TelegramBot bot,
-            TrackDialogHandler dialogHandler) {
+    public CommandDispatcher(CommandRepository repository, TelegramBot bot, TrackDialogHandler dialogHandler) {
         this.repository = repository;
         this.bot = bot;
         this.dialogHandler = dialogHandler;
@@ -71,41 +67,41 @@ public class CommandDispatcher {
 
     private void runCommand(String commandName, String username, Long chatId, String[] args) {
         repository
-            .findCommand(commandName)
-            .ifPresentOrElse(
-                command -> {
-                    logger.atInfo()
-                        .addKeyValue("chatId", chatId)
-                        .addKeyValue("username", username)
-                        .addKeyValue("command", commandName)
-                        .log("Выполняется команда");
+                .findCommand(commandName)
+                .ifPresentOrElse(
+                        command -> {
+                            logger.atInfo()
+                                    .addKeyValue("chatId", chatId)
+                                    .addKeyValue("username", username)
+                                    .addKeyValue("command", commandName)
+                                    .log("Выполняется команда");
 
-                    try {
-                        String response = command.execute(username, chatId, args);
-                        bot.execute(new SendMessage(chatId, response));
-                        logger.atDebug()
-                            .addKeyValue("chatId", chatId)
-                            .addKeyValue("username", username)
-                            .log("Отправлено сообщение /" + command.getName());
-                        logger.atInfo().log("Команда /" + command.getName() + " выполнена");
-                    } catch (Exception e) {
-                        logger.atError()
-                            .addKeyValue("chatId", chatId)
-                            .addKeyValue("username", username)
-                            .addKeyValue("command", commandName)
-                            .setCause(e)
-                            .log("Ошибка при отправке сообщения для команды /" + command.getName());
-                        send(chatId, "Произошла ошибка. Попробуйте позже.");
-                    }
-                },
-                () -> {
-                    logger.atWarn()
-                        .addKeyValue("chatId", chatId)
-                        .addKeyValue("username", username)
-                        .addKeyValue("command", commandName)
-                        .log("Неизвестная команда: отсутствует в репозитории");
-                    send(chatId, "Неизвестная команда. Воспользуйтесь /help.");
-                });
+                            try {
+                                String response = command.execute(username, chatId, args);
+                                bot.execute(new SendMessage(chatId, response));
+                                logger.atDebug()
+                                        .addKeyValue("chatId", chatId)
+                                        .addKeyValue("username", username)
+                                        .log("Отправлено сообщение /" + command.getName());
+                                logger.atInfo().log("Команда /" + command.getName() + " выполнена");
+                            } catch (Exception e) {
+                                logger.atError()
+                                        .addKeyValue("chatId", chatId)
+                                        .addKeyValue("username", username)
+                                        .addKeyValue("command", commandName)
+                                        .setCause(e)
+                                        .log("Ошибка при отправке сообщения для команды /" + command.getName());
+                                send(chatId, "Произошла ошибка. Попробуйте позже.");
+                            }
+                        },
+                        () -> {
+                            logger.atWarn()
+                                    .addKeyValue("chatId", chatId)
+                                    .addKeyValue("username", username)
+                                    .addKeyValue("command", commandName)
+                                    .log("Неизвестная команда: отсутствует в репозитории");
+                            send(chatId, "Неизвестная команда. Воспользуйтесь /help.");
+                        });
     }
 
     private boolean isInterruptingCommand(String text) {

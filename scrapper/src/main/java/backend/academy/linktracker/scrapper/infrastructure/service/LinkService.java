@@ -11,10 +11,10 @@ import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import backend.academy.linktracker.scrapper.application.linktag.LinkTagRepository;
 import backend.academy.linktracker.scrapper.application.tag.Tag;
 import backend.academy.linktracker.scrapper.application.tag.TagRepository;
+import backend.academy.linktracker.scrapper.infrastructure.configuration.SchedulerProperties;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import backend.academy.linktracker.scrapper.infrastructure.configuration.SchedulerProperties;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +46,9 @@ public class LinkService {
         }
 
         logger.atDebug()
-            .addKeyValue("chatId", chatId)
-            .addKeyValue("count", allLinks.size())
-            .log("Receive list of links");
+                .addKeyValue("chatId", chatId)
+                .addKeyValue("count", allLinks.size())
+                .log("Receive list of links");
 
         return new ListLinksResponse(allLinks, allLinks.size());
     }
@@ -122,9 +122,9 @@ public class LinkService {
         }
 
         return allTagIds.stream()
-            .map(tagId -> tagRepository.findById(tagId))
-            .flatMap(Optional::stream)
-            .map(tag -> tag.name())
-            .toList();
+                .map(tagId -> tagRepository.findById(tagId))
+                .flatMap(Optional::stream)
+                .map(tag -> tag.name())
+                .toList();
     }
 }

@@ -4,15 +4,12 @@ import backend.academy.linktracker.bot.application.client.ScrapperClient;
 import backend.academy.linktracker.bot.application.dto.request.AddLinkRequest;
 import backend.academy.linktracker.bot.application.dto.request.RemoveLinkRequest;
 import backend.academy.linktracker.bot.application.exception.ScrapperClientException;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.ObjectMapper;
 
 @Component
 @RequiredArgsConstructor
@@ -23,7 +20,8 @@ public class TrackDialogHandler {
     private final TrackSessionRepository sessionRepository;
 
     public String handle(Long chatId, String text) {
-        TrackSession session = sessionRepository.find(chatId).orElseThrow(() -> new IllegalStateException("Сессия не найдена"));
+        TrackSession session =
+                sessionRepository.find(chatId).orElseThrow(() -> new IllegalStateException("Сессия не найдена"));
 
         if (text.equals("/cancel")) {
             deleteSession(chatId);
