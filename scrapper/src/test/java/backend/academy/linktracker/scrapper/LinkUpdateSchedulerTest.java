@@ -48,8 +48,9 @@ public class LinkUpdateSchedulerTest {
 
     @BeforeEach
     void setUp() {
-        properties = new SchedulerProperties(60, 100);
+        properties = new SchedulerProperties(60, 1000, 4);
         scheduler = new LinkUpdateScheduler(linkRepository, messageSender, List.of(checker), properties);
+        scheduler.init();
     }
 
     @Test
@@ -60,7 +61,7 @@ public class LinkUpdateSchedulerTest {
         LinksPage page = new LinksPage(Map.of(URL, List.of(CHAT_ID_1, CHAT_ID_2)), 1L);
         LinksPage emptyPage = new LinksPage(Map.of(), 1L);
 
-        when(linkRepository.getLinksWithChats(100, 0L)).thenReturn(page);
+        when(linkRepository.getLinksWithChats(1000, 0L)).thenReturn(page);
         when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link));
         when(checker.supports(URL)).thenReturn(true);
         when(checker.check(link)).thenReturn(Optional.of("Новый коммит"));
@@ -82,7 +83,7 @@ public class LinkUpdateSchedulerTest {
         LinksPage page = new LinksPage(Map.of(URL, List.of(CHAT_ID_1)), 1L);
         LinksPage emptyPage = new LinksPage(Map.of(), 1L);
 
-        when(linkRepository.getLinksWithChats(100, 0L)).thenReturn(page);
+        when(linkRepository.getLinksWithChats(1000, 0L)).thenReturn(page);
         when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link));
         when(checker.supports(URL)).thenReturn(true);
         when(checker.check(link)).thenReturn(Optional.empty());
@@ -95,7 +96,7 @@ public class LinkUpdateSchedulerTest {
     @Test
     void checkUpdates_noLinks_doesNothing() {
         LinksPage emptyPage = new LinksPage(Map.of(), 0L);
-        when(linkRepository.getLinksWithChats(100, 0L)).thenReturn(emptyPage);
+        when(linkRepository.getLinksWithChats(1000, 0L)).thenReturn(emptyPage);
 
         scheduler.checkUpdates();
 
@@ -111,7 +112,7 @@ public class LinkUpdateSchedulerTest {
         LinksPage page = new LinksPage(Map.of(URL, List.of(CHAT_ID_1)), 1L);
         LinksPage emptyPage = new LinksPage(Map.of(), 1L);
 
-        when(linkRepository.getLinksWithChats(100, 0L)).thenReturn(page);
+        when(linkRepository.getLinksWithChats(1000, 0L)).thenReturn(page);
         when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link));
         when(checker.supports(URL)).thenReturn(true);
         when(checker.check(link)).thenThrow(new RuntimeException("Сеть недоступна"));
@@ -132,7 +133,7 @@ public class LinkUpdateSchedulerTest {
         LinksPage page = new LinksPage(Map.of(URL, List.of(CHAT_ID_1), url2, List.of(CHAT_ID_1)), 2L);
         LinksPage emptyPage = new LinksPage(Map.of(), 2L);
 
-        when(linkRepository.getLinksWithChats(100, 0L)).thenReturn(page);
+        when(linkRepository.getLinksWithChats(1000, 0L)).thenReturn(page);
         when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link1));
         when(linkRepository.find(CHAT_ID_1, url2)).thenReturn(Optional.of(link2));
         when(checker.supports(anyString())).thenReturn(true);
@@ -154,7 +155,7 @@ public class LinkUpdateSchedulerTest {
         LinksPage page = new LinksPage(Map.of(URL, List.of(CHAT_ID_1), url2, List.of(CHAT_ID_1)), 2L);
         LinksPage emptyPage = new LinksPage(Map.of(), 2L);
 
-        when(linkRepository.getLinksWithChats(100, 0L)).thenReturn(page);
+        when(linkRepository.getLinksWithChats(1000, 0L)).thenReturn(page);
         when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link1));
         when(linkRepository.find(CHAT_ID_1, url2)).thenReturn(Optional.of(link2));
         when(checker.supports(anyString())).thenReturn(true);

@@ -15,7 +15,7 @@ public class UpdateService {
         String message = "Обновление по ссылке: " + request.url()
                 + (request.description() != null ? "\n" + request.description() : "");
 
-        for (Long chatId : request.tgChatIds()) {
+        for (Long chatId : request.chatIds()) {
             bot.execute(new SendMessage(chatId, message));
         }
     }

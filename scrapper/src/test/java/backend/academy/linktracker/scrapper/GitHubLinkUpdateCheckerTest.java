@@ -45,7 +45,11 @@ class GitHubLinkUpdateCheckerTest {
                 new GitHubEventPayload(
                         "opened",
                         null,
-                        new GitHubIssue(42L, "Bug in production", "open", "https://github.com/user/repo/issues/42")),
+                        new GitHubIssue(42L, "Bug in production", "open", "https://github.com/user/repo/issues/42"),
+                        "",
+                        "",
+                        "",
+                        null),
                 Instant.parse("2026-04-06T10:00:00Z"));
 
         TrackedLink link = new TrackedLink(1, 1L, "https://github.com/user/repo");

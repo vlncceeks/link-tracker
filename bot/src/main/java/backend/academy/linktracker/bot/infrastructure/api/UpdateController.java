@@ -23,7 +23,9 @@ public class UpdateController {
     public ResponseEntity<Void> postUpdate(@RequestBody @Valid LinkUpdateRequest request) {
         logger.atInfo()
                 .addKeyValue("url", request.url())
-                .addKeyValue("chatCount", request.tgChatIds().size())
+                .addKeyValue(
+                        "chatCount",
+                        request.chatIds() != null ? request.chatIds().size() : 0)
                 .log("Получено обновление ссылки");
 
         updateService.receive(request);

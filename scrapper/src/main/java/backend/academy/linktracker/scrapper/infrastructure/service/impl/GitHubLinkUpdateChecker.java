@@ -105,6 +105,24 @@ public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
                             .append(preview)
                             .append("\n\n");
                 }
+                case "PushEvent" -> {
+                    String ref = event.payload().ref();
+                    String head = event.payload().head();
+                    String branch = ref != null ? ref.replace("refs/heads/", "") : "unknown";
+                    sb.append("Push в репозиторий\n")
+                            .append("Автор: ")
+                            .append(event.actor().login())
+                            .append("\n")
+                            .append("Время: ")
+                            .append(event.createdAt())
+                            .append("\n")
+                            .append("Ветка: ")
+                            .append(branch)
+                            .append("\n")
+                            .append("Коммит: ")
+                            .append(head != null ? head.substring(0, 7) : "unknown")
+                            .append("\n\n");
+                }
                 default -> {}
             }
         }

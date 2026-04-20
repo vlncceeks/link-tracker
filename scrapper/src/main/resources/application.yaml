@@ -24,8 +24,9 @@ app:
     base-url: https://api.github.com
   access-type: ${ACCESS_TYPE:SQL}
   scheduler:
-    interval: 60000
-    batch-size: 100
+    interval: 30000
+    batch-size: 1000
+    thread-count: 4
 
 bot:
   base-url: ${BOT_URL:http://localhost:8081}
