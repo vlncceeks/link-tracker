@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
-@Component
 public class BotClientImpl implements MessageSender {
     private static final Logger logger = LoggerFactory.getLogger(BotClientImpl.class);
 

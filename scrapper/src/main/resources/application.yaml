@@ -13,6 +13,11 @@ spring:
     name: scrapper
   config:
     import: optional:file:.env[.properties]
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: com.fasterxml.jackson.databind.JsonSerializer
 
 app:
   stackoverflow:
@@ -23,10 +28,13 @@ app:
     token: ${GITHUB_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
     base-url: https://api.github.com
   access-type: ${ACCESS_TYPE:SQL}
+  message-sender-type: ${MESSAGE_SENDER_TYPE:KAFKA}
   scheduler:
     interval: 30000
     batch-size: 1000
     thread-count: 4
+  kafka:
+    topic: link-updates
 
 bot:
   base-url: ${BOT_URL:http://localhost:8081}
