@@ -1,6 +1,5 @@
 package backend.academy.linktracker.scrapper.infrastructure.configuration;
 
-import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

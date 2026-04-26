@@ -17,9 +17,11 @@ public class LinkUpdateConsumer {
     @KafkaListener(topics = "${app.kafka.topic}", groupId = "bot-group")
     public void listenUpdate(LinkUpdateRequest request) {
         logger.atInfo()
-            .addKeyValue("url", request.url())
-            .addKeyValue("chatCount", request.chatIds() != null ? request.chatIds().size() : 0)
-            .log("Получено обновление ссылки");
+                .addKeyValue("url", request.url())
+                .addKeyValue(
+                        "chatCount",
+                        request.chatIds() != null ? request.chatIds().size() : 0)
+                .log("Получено обновление ссылки");
 
         updateService.receive(request);
     }
