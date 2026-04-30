@@ -1,4 +1,4 @@
-package backend.academy.linktracker.scrapper.application.client.impl;
+package backend.academy.linktracker.scrapper.application.client.KafkaMessageSenderImpl;
 
 import backend.academy.linktracker.scrapper.application.client.MessageSender;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;

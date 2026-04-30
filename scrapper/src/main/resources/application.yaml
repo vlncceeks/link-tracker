@@ -2,6 +2,10 @@ server:
   port: 8082
 
 spring:
+  jpa:
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:scrapper}
     username: ${DB_USER:scrapper}
@@ -27,7 +31,7 @@ app:
   github:
     token: ${GITHUB_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
     base-url: https://api.github.com
-  access-type: ${ACCESS_TYPE:SQL}
+  access-type: ${ACCESS_TYPE:ORM}
   message-sender-type: ${MESSAGE_SENDER_TYPE:KAFKA}
   scheduler:
     interval: 30000

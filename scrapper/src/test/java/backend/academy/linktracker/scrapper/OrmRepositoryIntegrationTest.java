@@ -47,17 +47,17 @@ public class OrmRepositoryIntegrationTest {
     @Autowired
     private LinkSpringRepository linkSpringRepository;
 
-    private ChatRepository chatRepository;
+    @Autowired
     private LinkRepository linkRepository;
+
+    @Autowired
+    private ChatRepository chatRepository;
 
     private static final Long CHAT_ID = 1L;
     private static final String URL = "https://github.com/user/repo";
 
     @BeforeEach
     void setUp() {
-        chatRepository = new OrmChatRepository(chatSpringRepository);
-        linkRepository = new OrmLinkRepository(linkSpringRepository);
-
         jdbcClient.sql("DELETE FROM tracked_links").update();
         jdbcClient.sql("DELETE FROM chats").update();
 

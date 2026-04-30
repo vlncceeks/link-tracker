@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import backend.academy.linktracker.scrapper.application.client.GitHubClient;
+import backend.academy.linktracker.scrapper.application.client.GitHubClientImpl.GitHubClientWrapper;
 import backend.academy.linktracker.scrapper.application.dto.GitHubActor;
 import backend.academy.linktracker.scrapper.application.dto.GitHubEventPayload;
 import backend.academy.linktracker.scrapper.application.dto.GitHubIssue;

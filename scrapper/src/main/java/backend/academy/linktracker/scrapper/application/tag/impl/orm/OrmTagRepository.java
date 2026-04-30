@@ -21,7 +21,7 @@ public class OrmTagRepository implements TagRepository {
 
     @Override
     public Tag update(String name, Tag tag) {
-        return tagSpringRepository.save(new Tag(tag.id(), name));
+        return tagSpringRepository.save(new Tag(tag.getId(), name));
     }
 
     @Override

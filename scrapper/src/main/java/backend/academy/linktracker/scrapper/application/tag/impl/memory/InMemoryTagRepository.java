@@ -28,10 +28,10 @@ public class InMemoryTagRepository implements TagRepository {
 
     @Override
     public Tag update(String name, Tag tag) {
-        Tag newTag = new Tag(tag.id(), name);
-        nameIndex.remove(tag.name());
-        nameIndex.put(name, tag.id());
-        storage.put(tag.id(), newTag);
+        Tag newTag = new Tag(tag.getId(), name);
+        nameIndex.remove(tag.getName());
+        nameIndex.put(name, tag.getId());
+        storage.put(tag.getId(), newTag);
         return newTag;
     }
 
@@ -58,7 +58,7 @@ public class InMemoryTagRepository implements TagRepository {
     public void deleteById(Integer id) {
         Tag removed = storage.remove(id);
         if (removed != null) {
-            nameIndex.remove(removed.name());
+            nameIndex.remove(removed.getName());
         }
     }
 }

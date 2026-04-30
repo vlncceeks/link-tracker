@@ -1,8 +1,9 @@
 package backend.academy.linktracker.scrapper.infrastructure.configuration;
 
 import backend.academy.linktracker.scrapper.application.client.MessageSender;
-import backend.academy.linktracker.scrapper.application.client.impl.BotClientImpl;
-import backend.academy.linktracker.scrapper.application.client.impl.KafkaMessageSender;
+import backend.academy.linktracker.scrapper.application.client.BotClientImpl.BotClientImpl;
+import backend.academy.linktracker.scrapper.application.client.BotClientImpl.BotClientWrapper;
+import backend.academy.linktracker.scrapper.application.client.KafkaMessageSenderImpl.KafkaMessageSender;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -18,7 +19,7 @@ public class MessageSenderConfig {
     private final KafkaTemplate<String, LinkUpdateRequest> kafkaTemplate;
 
     @Lazy
-    private final BotProperties properties;
+    private final BotClientImpl botClient;
 
     @Bean
     @ConditionalOnProperty(name = "app.message-sender-type", havingValue = "KAFKA")
@@ -29,6 +30,6 @@ public class MessageSenderConfig {
     @Bean
     @ConditionalOnProperty(name = "app.message-sender-type", havingValue = "DIRECTLY")
     public MessageSender messageSender() {
-        return new BotClientImpl(properties);
+        return new BotClientWrapper(botClient);
     }
 }

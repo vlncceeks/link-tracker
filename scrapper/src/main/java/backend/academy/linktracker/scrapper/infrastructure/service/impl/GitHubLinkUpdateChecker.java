@@ -1,7 +1,8 @@
 package backend.academy.linktracker.scrapper.infrastructure.service.impl;
 
 import backend.academy.linktracker.scrapper.application.client.GitHubClient;
-import backend.academy.linktracker.scrapper.application.client.impl.GitHubClientImpl;
+import backend.academy.linktracker.scrapper.application.client.GitHubClientImpl.GitHubClientWrapper;
+import backend.academy.linktracker.scrapper.application.client.GitHubClientImpl.GitHubUrlParser;
 import backend.academy.linktracker.scrapper.application.dto.response.GitHubEventResponse;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
@@ -21,7 +22,7 @@ import org.springframework.web.client.RestClientException;
 public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
     private static final Logger logger = LoggerFactory.getLogger(GitHubLinkUpdateChecker.class);
     private final LinkRepository linkRepository;
-    private final GitHubClient gitHubClient;
+    private final GitHubClient clientWrapper;
 
     private static final Set<String> TRACKED_EVENT_TYPES = Set.of("PullRequestEvent", "IssuesEvent", "PushEvent");
 
@@ -32,10 +33,10 @@ public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
 
     @Override
     public Optional<String> check(TrackedLink link) {
-        return GitHubClientImpl.parseUrl(link.getUrl()).flatMap(parts -> {
+        return GitHubUrlParser.parseUrl(link.getUrl()).flatMap(parts -> {
             try {
                 List<GitHubEventResponse> events =
-                        gitHubClient.fetchEvents(parts[0], parts[1], link.getLastCheckedAt());
+                    clientWrapper.fetchEvents(parts[0], parts[1], link.getLastCheckedAt());
                 List<GitHubEventResponse> relevant = events.stream()
                         .filter(e -> TRACKED_EVENT_TYPES.contains(e.type()))
                         .toList();
@@ -129,4 +130,5 @@ public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
 
         return sb.toString().trim();
     }
+
 }

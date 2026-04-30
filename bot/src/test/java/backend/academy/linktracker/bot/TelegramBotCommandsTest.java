@@ -13,6 +13,8 @@ import backend.academy.linktracker.bot.application.command.impl.StartCommand;
 import backend.academy.linktracker.bot.application.state.TrackDialogHandler;
 import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
 import backend.academy.linktracker.bot.infrastructure.registry.InMemoryCommandRepository;
+import backend.academy.linktracker.bot.infrastructure.service.CommandService;
+import backend.academy.linktracker.bot.infrastructure.service.SessionService;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
@@ -36,6 +38,10 @@ class TelegramBotCommandsTest {
     private CommandDispatcher dispatcher;
     private TrackDialogHandler handler;
     private TelegramBot bot;
+    @Mock
+    private CommandService commandService;
+    @Mock
+    private SessionService sessionService;
 
     @Captor
     ArgumentCaptor<SendMessage> captor = ArgumentCaptor.forClass(SendMessage.class);
@@ -45,11 +51,13 @@ class TelegramBotCommandsTest {
         bot = mock(TelegramBot.class);
 
         InMemoryCommandRepository repository = new InMemoryCommandRepository();
-        handler = new TrackDialogHandler(scrapperClient, sessionRepository);
         repository.addCommand(new StartCommand(scrapperClient));
         repository.addCommand(new HelpCommand(repository));
 
-        dispatcher = new CommandDispatcher(repository, bot, handler);
+        handler = new TrackDialogHandler(scrapperClient, sessionService);
+
+        CommandService realCommandService = new CommandService(repository); // реальный сервис
+        dispatcher = new CommandDispatcher(realCommandService, bot, handler);
     }
 
     @Test

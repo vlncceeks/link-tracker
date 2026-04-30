@@ -65,7 +65,7 @@ public class RepositoryConfig {
     @Bean
     @ConditionalOnProperty(name = "app.access-type", havingValue = "MEMORY")
     public LinkRepository inMemoryLinkRepository(ChatRepository chatRepository) {
-        return new InMemoryLinkRepository(chatRepository);
+        return new InMemoryLinkRepository();
     }
 
     @Bean

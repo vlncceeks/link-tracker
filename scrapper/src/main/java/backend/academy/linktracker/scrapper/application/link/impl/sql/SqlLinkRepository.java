@@ -4,8 +4,6 @@ import backend.academy.linktracker.scrapper.application.dto.response.LinkRespons
 import backend.academy.linktracker.scrapper.application.dto.response.LinksPage;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -14,14 +12,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import backend.academy.linktracker.scrapper.application.link.mapper.TrackedLinkRowMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import static java.util.Optional.ofNullable;
 
 @RequiredArgsConstructor
 @Transactional
 public class SqlLinkRepository implements LinkRepository {
     private final JdbcClient jdbcClient;
+    private static final RowMapper<TrackedLink> ROW_MAPPER = new TrackedLinkRowMapper();
 
     @Override
     public TrackedLink add(Long chatId, TrackedLink link) {
@@ -35,10 +39,11 @@ public class SqlLinkRepository implements LinkRepository {
                 .param("url", link.getUrl())
                 .param(
                         "lastCheckedAt",
-                        link.getLastCheckedAt() != null
-                                ? OffsetDateTime.ofInstant(link.getLastCheckedAt(), ZoneOffset.UTC)
-                                : OffsetDateTime.now(ZoneOffset.UTC))
-                .query(this::mapRow)
+                        ofNullable(link.getLastCheckedAt())
+                            .map(date -> OffsetDateTime.ofInstant(date, ZoneOffset.UTC))
+                            .orElse(OffsetDateTime.now(ZoneOffset.UTC))
+                )
+                .query(ROW_MAPPER)
                 .single();
     }
 
@@ -57,7 +62,7 @@ public class SqlLinkRepository implements LinkRepository {
                 .sql("SELECT * FROM tracked_links WHERE chat_id = :chatId AND url = :url")
                 .param("chatId", chatId)
                 .param("url", url)
-                .query(this::mapRow)
+                .query(ROW_MAPPER)
                 .optional();
     }
 
@@ -67,7 +72,7 @@ public class SqlLinkRepository implements LinkRepository {
                 .sql("UPDATE tracked_links SET last_checked_at = :lastCheckedAt WHERE id = :linkId")
                 .param("lastCheckedAt", link.getLastCheckedAt())
                 .param("linkId", link.getId())
-                .query(this::mapRow)
+                .query(ROW_MAPPER)
                 .single();
     }
 
@@ -125,15 +130,5 @@ public class SqlLinkRepository implements LinkRepository {
                     return new LinkResponse(e.getKey(), linkRows.getFirst().url(), tags, List.of());
                 })
                 .toList();
-    }
-
-    // Маппер строки БД => TrackedLink
-    @SuppressWarnings("PMD.UnusedFormalParameter")
-    private TrackedLink mapRow(ResultSet rs, int rowNum) throws SQLException {
-        TrackedLink link = new TrackedLink(rs.getInt("id"), rs.getLong("chat_id"), rs.getString("url"));
-
-        OffsetDateTime lastCheckedAt = rs.getObject("last_checked_at", OffsetDateTime.class);
-        link.setLastCheckedAt(lastCheckedAt != null ? lastCheckedAt.toInstant() : null);
-        return link;
     }
 }

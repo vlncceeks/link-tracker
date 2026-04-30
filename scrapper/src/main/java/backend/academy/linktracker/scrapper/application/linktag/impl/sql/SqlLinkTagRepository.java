@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 @RequiredArgsConstructor
 public class SqlLinkTagRepository implements LinkTagRepository {
@@ -16,7 +17,6 @@ public class SqlLinkTagRepository implements LinkTagRepository {
         String sql = """
             INSERT INTO link_tags(link_id, tag_id)
             VALUES (?, ?)
-            ON CONFLICT (link_id, tag_id) DO NOTHING
         """;
 
         jdbcTemplate.update(sql, linkId, tagId);

@@ -1,7 +1,18 @@
 package backend.academy.linktracker.scrapper.application.chat.impl.orm;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Table("chats")
-public record Chat(@Id Long id) {}
+@Entity
+@Table(name = "chats")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Chat {
+    @Id
+    private Long id;
+}

@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface LinkSpringRepository
         extends CrudRepository<TrackedLink, Integer>, PagingAndSortingRepository<TrackedLink, Integer> {
 
@@ -18,7 +20,7 @@ public interface LinkSpringRepository
 
     void deleteByChatIdAndUrl(Long chatId, String url);
 
-    @Query("""
+    @Query(value ="""
         SELECT tl.id, tl.url, t.name as tag_name
         FROM tracked_links tl
         LEFT JOIN link_tags lt ON tl.id = lt.link_id
@@ -26,7 +28,8 @@ public interface LinkSpringRepository
         WHERE tl.chat_id = :chatId AND tl.id > :lastId
         ORDER BY tl.id
         LIMIT :limit
-        """)
+        """,
+        nativeQuery = true)
     List<LinkWithTagRow> findAllWithTagsByChatIdKeySet(Long chatId, long lastId, int limit);
 
     Page<TrackedLink> findAll(Pageable pageable);

@@ -2,6 +2,8 @@ package backend.academy.linktracker.bot.infrastructure.api;
 
 import backend.academy.linktracker.bot.application.dto.response.ApiErrorResponse;
 import java.util.Arrays;
+import backend.academy.linktracker.bot.application.exception.CommandNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;

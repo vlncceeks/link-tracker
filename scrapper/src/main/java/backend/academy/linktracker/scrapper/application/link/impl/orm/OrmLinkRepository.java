@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class OrmLinkRepository implements LinkRepository {
         return repository.save(toSave);
     }
 
+    @Transactional
     @Override
     public void remove(Long chatId, String url) {
         repository.deleteByChatIdAndUrl(chatId, url);

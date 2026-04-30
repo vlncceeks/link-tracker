@@ -2,7 +2,9 @@ package backend.academy.linktracker.bot.application.command.impl;
 
 import backend.academy.linktracker.bot.application.client.ScrapperClient;
 import backend.academy.linktracker.bot.application.command.Command;
+import backend.academy.linktracker.bot.application.dto.response.LinkResponse;
 import backend.academy.linktracker.bot.application.dto.response.ListLinksResponse;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,13 +31,12 @@ public class ListCommand implements Command {
 
     @Override
     public String execute(String username, Long chatId, String[] args) {
-        try {
-            ListLinksResponse listLinks = scrapperClient.getLinks(chatId);
-            if (listLinks.size() == 0) return "Отслеживаемых ссылок нет. \nДобавьте с помощью команды /track url";
-            return listLinks.links().stream().map(link -> link.url()).collect(Collectors.joining(", "));
-        } catch (Exception e) {
-            logger.atError().addKeyValue("status", e.getMessage()).log("Ошибка ответа от Scrapper");
-            return "Ошибка ответа сервиса";
-        }
+        ListLinksResponse listLinks = scrapperClient.getLinks(chatId);
+        return Optional.ofNullable(listLinks)
+            .filter(links -> !links.links().isEmpty())
+            .map(links -> links.links().stream()
+                .map(LinkResponse::url)
+                .collect(Collectors.joining(", ")))
+            .orElse("Отслеживаемых ссылок нет. \nДобавьте с помощью команды /track url");
     }
 }

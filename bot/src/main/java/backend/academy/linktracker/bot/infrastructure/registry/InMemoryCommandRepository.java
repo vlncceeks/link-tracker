@@ -19,7 +19,7 @@ public class InMemoryCommandRepository implements CommandRepository {
     }
 
     @Override
-    public Optional<Command> findCommand(String commandName) {
+    public Optional<Command> getCommand(String commandName) {
         return Optional.ofNullable(repository.get(commandName));
     }
 
