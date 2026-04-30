@@ -2,10 +2,14 @@ package backend.academy.linktracker.bot.infrastructure.kafka;
 
 import backend.academy.linktracker.bot.application.dto.request.LinkUpdateRequest;
 import backend.academy.linktracker.bot.infrastructure.service.UpdateService;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.kafka.support.serializer.DeserializationException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,6 +18,10 @@ public class LinkUpdateConsumer {
     private static final Logger logger = LoggerFactory.getLogger(LinkUpdateConsumer.class);
     private final UpdateService updateService;
 
+    @RetryableTopic(
+        attempts = "${app.kafka.retry.attempts}",
+        exclude = {DeserializationException.class, ValidationException.class}
+    )
     @KafkaListener(topics = "${app.kafka.topic}", groupId = "bot-group")
     public void listenUpdate(LinkUpdateRequest request) {
         logger.atInfo()
@@ -24,5 +32,12 @@ public class LinkUpdateConsumer {
                 .log("Получено обновление ссылки");
 
         updateService.receive(request);
+    }
+
+    @DltHandler
+    public void handleDltUpdate(LinkUpdateRequest request) {
+        logger.atInfo()
+            .addKeyValue("url", request.url())
+            .log("Event on dlt topic");
     }
 }
