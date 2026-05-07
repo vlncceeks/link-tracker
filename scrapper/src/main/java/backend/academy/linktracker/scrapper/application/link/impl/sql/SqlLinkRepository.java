@@ -1,9 +1,12 @@
 package backend.academy.linktracker.scrapper.application.link.impl.sql;
 
+import static java.util.Optional.ofNullable;
+
 import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.LinksPage;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
+import backend.academy.linktracker.scrapper.application.link.mapper.TrackedLinkRowMapper;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -12,14 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import backend.academy.linktracker.scrapper.application.link.mapper.TrackedLinkRowMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
-import static java.util.Optional.ofNullable;
 
 @RequiredArgsConstructor
 @Transactional
@@ -40,9 +39,8 @@ public class SqlLinkRepository implements LinkRepository {
                 .param(
                         "lastCheckedAt",
                         ofNullable(link.getLastCheckedAt())
-                            .map(date -> OffsetDateTime.ofInstant(date, ZoneOffset.UTC))
-                            .orElse(OffsetDateTime.now(ZoneOffset.UTC))
-                )
+                                .map(date -> OffsetDateTime.ofInstant(date, ZoneOffset.UTC))
+                                .orElse(OffsetDateTime.now(ZoneOffset.UTC)))
                 .query(ROW_MAPPER)
                 .single();
     }

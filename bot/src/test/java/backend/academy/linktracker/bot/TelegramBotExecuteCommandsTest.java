@@ -16,12 +16,9 @@ import backend.academy.linktracker.bot.application.dto.response.ListLinksRespons
 import backend.academy.linktracker.bot.application.exception.ScrapperClientException;
 import backend.academy.linktracker.bot.application.state.TrackDialogHandler;
 import backend.academy.linktracker.bot.application.state.TrackSession;
-import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
 import backend.academy.linktracker.bot.application.state.TrackState;
-import java.util.List;
-import java.util.Optional;
-import backend.academy.linktracker.bot.infrastructure.service.CommandService;
 import backend.academy.linktracker.bot.infrastructure.service.SessionService;
+import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

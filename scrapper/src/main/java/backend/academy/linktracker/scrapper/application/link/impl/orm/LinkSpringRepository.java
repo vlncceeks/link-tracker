@@ -20,7 +20,7 @@ public interface LinkSpringRepository
 
     void deleteByChatIdAndUrl(Long chatId, String url);
 
-    @Query(value ="""
+    @Query(value = """
         SELECT tl.id, tl.url, t.name as tag_name
         FROM tracked_links tl
         LEFT JOIN link_tags lt ON tl.id = lt.link_id
@@ -28,8 +28,7 @@ public interface LinkSpringRepository
         WHERE tl.chat_id = :chatId AND tl.id > :lastId
         ORDER BY tl.id
         LIMIT :limit
-        """,
-        nativeQuery = true)
+        """, nativeQuery = true)
     List<LinkWithTagRow> findAllWithTagsByChatIdKeySet(Long chatId, long lastId, int limit);
 
     Page<TrackedLink> findAll(Pageable pageable);

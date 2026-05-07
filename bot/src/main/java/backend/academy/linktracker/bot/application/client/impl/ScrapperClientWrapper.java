@@ -35,41 +35,41 @@ public class ScrapperClientWrapper implements ScrapperClient {
     @Override
     public ListLinksResponse getLinks(Long chatId) {
         return client.getRestClient()
-            .get()
-            .uri("/links")
-            .header(TG_CHAT_ID, chatId.toString())
-            .retrieve()
-            .body(ListLinksResponse.class);
+                .get()
+                .uri("/links")
+                .header(TG_CHAT_ID, chatId.toString())
+                .retrieve()
+                .body(ListLinksResponse.class);
     }
 
     @Override
     public LinkResponse addLink(Long chatId, AddLinkRequest request) {
         logger.atInfo()
-            .addKeyValue("chatId", chatId)
-            .addKeyValue("url", request.url())
-            .log("Добавление ссылки через Scrapper");
+                .addKeyValue("chatId", chatId)
+                .addKeyValue("url", request.url())
+                .log("Добавление ссылки через Scrapper");
         return client.getRestClient()
-            .post()
-            .uri("/links")
-            .header(TG_CHAT_ID, chatId.toString())
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(request)
-            .retrieve()
-            .body(LinkResponse.class);
+                .post()
+                .uri("/links")
+                .header(TG_CHAT_ID, chatId.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .retrieve()
+                .body(LinkResponse.class);
     }
 
     @Override
     public LinkResponse removeLink(Long chatId, RemoveLinkRequest request) {
         logger.atInfo()
-            .addKeyValue("chatId", chatId)
-            .addKeyValue("url", request.url())
-            .log("Удаление ссылки через Scrapper");
+                .addKeyValue("chatId", chatId)
+                .addKeyValue("url", request.url())
+                .log("Удаление ссылки через Scrapper");
         return client.getRestClient()
-            .method(HttpMethod.DELETE)
-            .uri("/links")
-            .header(TG_CHAT_ID, chatId.toString())
-            .body(request)
-            .retrieve()
-            .body(LinkResponse.class);
+                .method(HttpMethod.DELETE)
+                .uri("/links")
+                .header(TG_CHAT_ID, chatId.toString())
+                .body(request)
+                .retrieve()
+                .body(LinkResponse.class);
     }
 }

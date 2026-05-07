@@ -6,7 +6,7 @@ import org.springframework.web.client.RestClient;
 
 @Getter
 @Component
-public class BotClientImpl{
+public class BotClientImpl {
     private final RestClient restClient;
 
     public BotClientImpl(BotClientFactory clientFactory) {

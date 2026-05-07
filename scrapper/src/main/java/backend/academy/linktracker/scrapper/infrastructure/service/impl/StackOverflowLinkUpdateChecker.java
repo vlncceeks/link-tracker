@@ -1,7 +1,6 @@
 package backend.academy.linktracker.scrapper.infrastructure.service.impl;
 
 import backend.academy.linktracker.scrapper.application.client.StackOverflowClient;
-import backend.academy.linktracker.scrapper.application.client.StackOverflowClientImpl.StackOverflowClientImpl;
 import backend.academy.linktracker.scrapper.application.client.StackOverflowClientImpl.StackOverflowClientWrapper;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowAnswerResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowCommentResponse;

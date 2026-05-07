@@ -2,10 +2,10 @@ package backend.academy.linktracker.scrapper;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import backend.academy.linktracker.scrapper.application.client.BotClientImpl.BotClientWrapper;
-import backend.academy.linktracker.scrapper.application.client.MessageSender;
 import backend.academy.linktracker.scrapper.application.client.BotClientImpl.BotClientImpl;
+import backend.academy.linktracker.scrapper.application.client.BotClientImpl.BotClientWrapper;
 import backend.academy.linktracker.scrapper.application.client.KafkaMessageSenderImpl.KafkaMessageSender;
+import backend.academy.linktracker.scrapper.application.client.MessageSender;
 import backend.academy.linktracker.scrapper.infrastructure.configuration.MessageSenderConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

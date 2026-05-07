@@ -19,9 +19,8 @@ public class LinkUpdateConsumer {
     private final UpdateService updateService;
 
     @RetryableTopic(
-        attempts = "${app.kafka.retry.attempts}",
-        exclude = {DeserializationException.class, ValidationException.class}
-    )
+            attempts = "${app.kafka.retry.attempts}",
+            exclude = {DeserializationException.class, ValidationException.class})
     @KafkaListener(topics = "${app.kafka.topic}", groupId = "bot-group")
     public void listenUpdate(LinkUpdateRequest request) {
         logger.atInfo()
@@ -36,8 +35,6 @@ public class LinkUpdateConsumer {
 
     @DltHandler
     public void handleDltUpdate(LinkUpdateRequest request) {
-        logger.atInfo()
-            .addKeyValue("url", request.url())
-            .log("Event on dlt topic");
+        logger.atInfo().addKeyValue("url", request.url()).log("Event on dlt topic");
     }
 }

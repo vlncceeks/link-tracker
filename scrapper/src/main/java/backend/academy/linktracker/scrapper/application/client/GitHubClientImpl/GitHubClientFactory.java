@@ -12,10 +12,10 @@ public class GitHubClientFactory {
 
     public RestClient createRestClient() {
         return RestClient.builder()
-            .baseUrl(properties.getBaseUrl())
-            .defaultHeader("Accept", "application/vnd.github+json")
-            .defaultHeader("X-GitHub-Api-Version", "2022-11-28")
-            .defaultHeader("Authorization", "Bearer " + properties.getToken())
-            .build();
+                .baseUrl(properties.getBaseUrl())
+                .defaultHeader("Accept", "application/vnd.github+json")
+                .defaultHeader("X-GitHub-Api-Version", "2022-11-28")
+                .defaultHeader("Authorization", "Bearer " + properties.getToken())
+                .build();
     }
 }

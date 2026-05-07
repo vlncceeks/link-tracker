@@ -1,7 +1,6 @@
 package backend.academy.linktracker.scrapper.infrastructure.service.impl;
 
 import backend.academy.linktracker.scrapper.application.client.GitHubClient;
-import backend.academy.linktracker.scrapper.application.client.GitHubClientImpl.GitHubClientWrapper;
 import backend.academy.linktracker.scrapper.application.client.GitHubClientImpl.GitHubUrlParser;
 import backend.academy.linktracker.scrapper.application.dto.response.GitHubEventResponse;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
@@ -36,7 +35,7 @@ public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
         return GitHubUrlParser.parseUrl(link.getUrl()).flatMap(parts -> {
             try {
                 List<GitHubEventResponse> events =
-                    clientWrapper.fetchEvents(parts[0], parts[1], link.getLastCheckedAt());
+                        clientWrapper.fetchEvents(parts[0], parts[1], link.getLastCheckedAt());
                 List<GitHubEventResponse> relevant = events.stream()
                         .filter(e -> TRACKED_EVENT_TYPES.contains(e.type()))
                         .toList();
@@ -130,5 +129,4 @@ public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
 
         return sb.toString().trim();
     }
-
 }

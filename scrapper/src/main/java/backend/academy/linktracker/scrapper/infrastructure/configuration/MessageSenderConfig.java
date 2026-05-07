@@ -1,9 +1,9 @@
 package backend.academy.linktracker.scrapper.infrastructure.configuration;
 
-import backend.academy.linktracker.scrapper.application.client.MessageSender;
 import backend.academy.linktracker.scrapper.application.client.BotClientImpl.BotClientImpl;
 import backend.academy.linktracker.scrapper.application.client.BotClientImpl.BotClientWrapper;
 import backend.academy.linktracker.scrapper.application.client.KafkaMessageSenderImpl.KafkaMessageSender;
+import backend.academy.linktracker.scrapper.application.client.MessageSender;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

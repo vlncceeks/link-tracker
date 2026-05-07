@@ -33,10 +33,8 @@ public class ListCommand implements Command {
     public String execute(String username, Long chatId, String[] args) {
         ListLinksResponse listLinks = scrapperClient.getLinks(chatId);
         return Optional.ofNullable(listLinks)
-            .filter(links -> !links.links().isEmpty())
-            .map(links -> links.links().stream()
-                .map(LinkResponse::url)
-                .collect(Collectors.joining(", ")))
-            .orElse("Отслеживаемых ссылок нет. \nДобавьте с помощью команды /track url");
+                .filter(links -> !links.links().isEmpty())
+                .map(links -> links.links().stream().map(LinkResponse::url).collect(Collectors.joining(", ")))
+                .orElse("Отслеживаемых ссылок нет. \nДобавьте с помощью команды /track url");
     }
 }

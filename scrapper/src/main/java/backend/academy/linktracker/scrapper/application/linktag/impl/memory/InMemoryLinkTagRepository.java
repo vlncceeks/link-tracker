@@ -1,7 +1,6 @@
 package backend.academy.linktracker.scrapper.application.linktag.impl.memory;
 
 import backend.academy.linktracker.scrapper.application.linktag.LinkTagRepository;
-import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

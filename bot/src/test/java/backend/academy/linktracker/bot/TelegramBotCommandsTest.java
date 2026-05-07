@@ -38,8 +38,10 @@ class TelegramBotCommandsTest {
     private CommandDispatcher dispatcher;
     private TrackDialogHandler handler;
     private TelegramBot bot;
+
     @Mock
     private CommandService commandService;
+
     @Mock
     private SessionService sessionService;
 

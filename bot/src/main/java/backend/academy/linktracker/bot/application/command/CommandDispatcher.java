@@ -69,35 +69,35 @@ public class CommandDispatcher {
             command = commandService.getCommand(commandName);
         } catch (CommandNotFoundException e) {
             logger.atWarn()
-                .addKeyValue("chatId", chatId)
-                .addKeyValue("username", username)
-                .addKeyValue("command", commandName)
-                .log("Неизвестная команда: отсутствует в репозитории");
+                    .addKeyValue("chatId", chatId)
+                    .addKeyValue("username", username)
+                    .addKeyValue("command", commandName)
+                    .log("Неизвестная команда: отсутствует в репозитории");
             send(chatId, "Неизвестная команда. Воспользуйтесь /help.");
             return;
         }
 
         logger.atInfo()
-            .addKeyValue("chatId", chatId)
-            .addKeyValue("username", username)
-            .addKeyValue("command", commandName)
-            .log("Выполняется команда");
+                .addKeyValue("chatId", chatId)
+                .addKeyValue("username", username)
+                .addKeyValue("command", commandName)
+                .log("Выполняется команда");
 
         try {
             String response = command.execute(username, chatId, args);
             send(chatId, response);
             logger.atDebug()
-                .addKeyValue("chatId", chatId)
-                .addKeyValue("username", username)
-                .log("Отправлено сообщение /" + command.getName());
+                    .addKeyValue("chatId", chatId)
+                    .addKeyValue("username", username)
+                    .log("Отправлено сообщение /" + command.getName());
             logger.atInfo().log("Команда /" + command.getName() + " выполнена");
         } catch (Exception e) {
             logger.atError()
-                .addKeyValue("chatId", chatId)
-                .addKeyValue("username", username)
-                .addKeyValue("command", commandName)
-                .setCause(e)
-                .log("Ошибка при отправке сообщения для команды /" + command.getName());
+                    .addKeyValue("chatId", chatId)
+                    .addKeyValue("username", username)
+                    .addKeyValue("command", commandName)
+                    .setCause(e)
+                    .log("Ошибка при отправке сообщения для команды /" + command.getName());
             send(chatId, "Произошла ошибка. Попробуйте позже.");
         }
     }

@@ -16,7 +16,13 @@ public class BotClientWrapper implements MessageSender {
     @Override
     public void send(LinkUpdateRequest request) {
         try {
-            botClient.getRestClient().post().uri("/updates").body(request).retrieve().toBodilessEntity();
+            botClient
+                    .getRestClient()
+                    .post()
+                    .uri("/updates")
+                    .body(request)
+                    .retrieve()
+                    .toBodilessEntity();
         } catch (ResourceAccessException e) {
             logger.atError().addKeyValue("url", request.url()).setCause(e).log("Unable to connect to the bot client");
             throw new BotClientException("Bot client is unavailable: " + e.getMessage());

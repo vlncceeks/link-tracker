@@ -1,7 +1,6 @@
 package backend.academy.linktracker.bot.bootstrap;
 
 import backend.academy.linktracker.bot.application.command.CommandDispatcher;
-import backend.academy.linktracker.bot.application.command.CommandRepository;
 import backend.academy.linktracker.bot.application.state.TrackDialogHandler;
 import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
 import backend.academy.linktracker.bot.infrastructure.service.CommandService;

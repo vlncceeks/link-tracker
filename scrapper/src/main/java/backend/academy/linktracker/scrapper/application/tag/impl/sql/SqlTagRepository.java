@@ -2,7 +2,6 @@ package backend.academy.linktracker.scrapper.application.tag.impl.sql;
 
 import backend.academy.linktracker.scrapper.application.tag.Tag;
 import backend.academy.linktracker.scrapper.application.tag.TagRepository;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;

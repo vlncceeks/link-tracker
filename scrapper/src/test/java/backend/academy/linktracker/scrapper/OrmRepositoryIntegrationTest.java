@@ -5,12 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import backend.academy.linktracker.scrapper.application.chat.impl.orm.ChatSpringRepository;
-import backend.academy.linktracker.scrapper.application.chat.impl.orm.OrmChatRepository;
 import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import backend.academy.linktracker.scrapper.application.link.impl.orm.LinkSpringRepository;
-import backend.academy.linktracker.scrapper.application.link.impl.orm.OrmLinkRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

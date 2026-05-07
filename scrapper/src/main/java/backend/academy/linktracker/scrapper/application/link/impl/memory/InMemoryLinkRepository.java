@@ -1,15 +1,13 @@
 package backend.academy.linktracker.scrapper.application.link.impl.memory;
 
+import static java.util.Optional.ofNullable;
+
 import backend.academy.linktracker.scrapper.application.Clearable;
-import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.LinksPage;
 import backend.academy.linktracker.scrapper.application.exception.ChatNotFoundException;
-import backend.academy.linktracker.scrapper.application.exception.LinkNotFoundException;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -17,8 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.util.Optional.ofNullable;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class InMemoryLinkRepository implements LinkRepository, Clearable {
@@ -67,8 +64,7 @@ public class InMemoryLinkRepository implements LinkRepository, Clearable {
     }
 
     private Map<String, TrackedLink> getLinksForChat(Long chatId) {
-        return ofNullable(storage.get(chatId))
-            .orElseThrow(() -> new ChatNotFoundException(chatId));
+        return ofNullable(storage.get(chatId)).orElseThrow(() -> new ChatNotFoundException(chatId));
     }
 
     @Override

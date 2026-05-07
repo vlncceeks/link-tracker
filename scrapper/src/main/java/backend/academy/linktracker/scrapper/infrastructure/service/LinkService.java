@@ -75,15 +75,13 @@ public class LinkService {
 
         List<String> tagNames = new ArrayList<>();
         for (String tagName : request.tags()) {
-            Tag tag = tagRepository.findByName(tagName).orElseGet(
-                () -> {
-                    try {
-                        return tagRepository.add(tagName);
-                    } catch (DuplicateKeyException e) {
-                    throw new TagAlreadyAddedException("Тег: " + tagName+ " уже существует.");
-                    }
+            Tag tag = tagRepository.findByName(tagName).orElseGet(() -> {
+                try {
+                    return tagRepository.add(tagName);
+                } catch (DuplicateKeyException e) {
+                    throw new TagAlreadyAddedException("Тег: " + tagName + " уже существует.");
                 }
-            );
+            });
 
             try {
                 linkTagRepository.addTagToLink(link.getId(), tag.getId());

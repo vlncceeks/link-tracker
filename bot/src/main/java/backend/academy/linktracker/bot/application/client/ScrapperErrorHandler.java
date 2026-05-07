@@ -2,6 +2,7 @@ package backend.academy.linktracker.bot.application.client;
 
 import backend.academy.linktracker.bot.application.dto.response.ApiErrorResponse;
 import backend.academy.linktracker.bot.application.exception.ScrapperClientException;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,7 +10,6 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestClient;
 import tools.jackson.databind.ObjectMapper;
-import java.io.IOException;
 
 @RequiredArgsConstructor
 public class ScrapperErrorHandler implements RestClient.ResponseSpec.ErrorHandler {
@@ -25,8 +25,8 @@ public class ScrapperErrorHandler implements RestClient.ResponseSpec.ErrorHandle
             throw e;
         } catch (Exception e) {
             logger.atError()
-                .addKeyValue("status", resp.getStatusCode())
-                .log("Не удалось прочитать тело ошибки от Scrapper");
+                    .addKeyValue("status", resp.getStatusCode())
+                    .log("Не удалось прочитать тело ошибки от Scrapper");
             throw new ScrapperClientException("Ошибка Scrapper: " + resp.getStatusCode());
         }
     }
