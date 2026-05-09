@@ -30,14 +30,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.wiremock.spring.EnableWireMock;
 
 @SpringBootTest
-@Import(KafkaTestConfig.class)
 @ActiveProfiles("test")
 @EnableWireMock
 class TelegramBotIntegrationTest implements WithAssertions {

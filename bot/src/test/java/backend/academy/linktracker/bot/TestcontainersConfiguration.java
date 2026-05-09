@@ -1,32 +1,32 @@
 package backend.academy.linktracker.bot;
 
-import com.redis.testcontainers.RedisContainer;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.kafka.KafkaContainer;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@TestConfiguration(proxyBeanMethods = false)
-class TestcontainersConfiguration {
+@TestConfiguration
+public class TestcontainersConfiguration implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-    // Uncomment to start PostgreSQLContainer
-    // @Bean
-    // @ServiceConnection
-    PostgreSQLContainer postgresContainer() {
-        return new PostgreSQLContainer(DockerImageName.parse("postgres:18-alpine"));
+    static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("apache/kafka:3.7.0"));
+
+    static final GenericContainer<?> REDIS =
+            new GenericContainer<>(DockerImageName.parse("redis:7-alpine")).withExposedPorts(6379);
+
+    static {
+        KAFKA.start();
+        REDIS.start();
     }
 
-    @Bean
-    @ServiceConnection(name = "kafka")
-    KafkaContainer kafkaContainer() {
-        return new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.0"));
-    }
-
-    @Bean
-    @ServiceConnection
-    RedisContainer redisContainer() {
-        return new RedisContainer(DockerImageName.parse("redis:7-alpine"));
+    @Override
+    public void initialize(ConfigurableApplicationContext context) {
+        TestPropertyValues.of(
+                        "spring.kafka.bootstrap-servers=" + KAFKA.getBootstrapServers(),
+                        "spring.data.redis.host=" + REDIS.getHost(),
+                        "spring.data.redis.port=" + REDIS.getMappedPort(6379))
+                .applyTo(context.getEnvironment());
     }
 }

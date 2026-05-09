@@ -20,44 +20,25 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.shaded.com.google.common.net.HttpHeaders;
-import org.testcontainers.utility.DockerImageName;
 import org.wiremock.spring.EnableWireMock;
 
 @SpringBootTest
 @Testcontainers
-@Import(KafkaTestConfig.class)
 @ActiveProfiles("test")
 @EnableWireMock
+@ContextConfiguration(initializers = TestcontainersConfiguration.class)
 class ScrapperToBotIntegrationTest {
-
-    @Container
-    static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("apache/kafka:3.7.0"));
-
-    @Container
-    static GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
-
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry) {
-        registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
-        registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
-    }
-
     @MockitoSpyBean
     private LinkUpdateConsumer linkUpdateConsumer;
 
@@ -68,10 +49,14 @@ class ScrapperToBotIntegrationTest {
     private String topic;
 
     @Autowired
-    private KafkaListenerEndpointRegistry registry;
+    private ApplicationContext context;
+
+    KafkaListenerEndpointRegistry registry;
 
     @BeforeEach
     void setUp() throws Exception {
+        registry = context.getBean(KafkaListenerEndpointRegistry.class);
+
         stubFor(
                 post(urlMatching("/bot[^/]+/sendMessage"))
                         .willReturn(
