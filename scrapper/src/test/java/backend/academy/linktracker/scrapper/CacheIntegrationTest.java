@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -55,13 +56,16 @@ public class CacheIntegrationTest {
     @Autowired
     private LinkRepository linkRepository;
 
+    @Autowired
+    private CacheManager cacheManager;
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
         if (chatRepository instanceof Clearable c) c.clear();
         if (linkRepository instanceof Clearable c) c.clear();
-        redisTemplate.getConnectionFactory().getConnection().flushAll();
+        cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
     }
 
     @Test
