@@ -24,3 +24,5 @@ app:
 
 scrapper:
   base-url: ${SCRAPPER_URL:http://localhost:8082}
+  connect-timeout: 3s
+  read-timeout: 5s

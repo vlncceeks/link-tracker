@@ -51,5 +51,5 @@ app:
 
 bot:
   base-url: ${BOT_URL:http://localhost:8081}
-
-
+  connect-timeout: 3s
+  read-timeout: 5s
