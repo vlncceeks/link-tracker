@@ -84,11 +84,6 @@
             <!-- or: spring-boot-starter-flyway -->
             <artifactId>spring-boot-starter-liquibase</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.lettuce</groupId>
-            <artifactId>lettuce-core</artifactId>
-            <version>6.1.10.RELEASE</version>
-        </dependency>
 
         <!-- Opentelemetry support: -->
         <!-- <dependency> -->

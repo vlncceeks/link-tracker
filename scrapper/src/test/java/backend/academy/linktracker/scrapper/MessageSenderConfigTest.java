@@ -13,9 +13,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.TestPropertySource;
 
 @ExtendWith(MockitoExtension.class)
-class MessageSenderConfigTest {
+    class MessageSenderConfigTest {
 
     @Test
     void whenKafkaType_thenKafkaMessageSenderCreated() {
@@ -36,7 +37,7 @@ class MessageSenderConfigTest {
                 .withUserConfiguration(MessageSenderConfig.class)
                 .withBean(KafkaTemplate.class, () -> Mockito.mock(KafkaTemplate.class))
                 .withBean(BotClientImpl.class, () -> Mockito.mock(BotClientImpl.class))
-                .withPropertyValues("app.message-sender-type=DIRECTLY");
+                .withPropertyValues("app.message-sender-type=DIRECTLYq");
 
         runner.run(context -> {
             assertThat(context.getBean(MessageSender.class)).isInstanceOf(BotClientWrapper.class);

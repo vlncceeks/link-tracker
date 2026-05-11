@@ -29,6 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestPropertySource(
         properties = {
             "app.access-type=MEMORY",
+            "app.message-sender-type=DIRECTLY",
             "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration,org.springframework.boot.liquibase.autoconfigure.LiquibaseAutoConfiguration"
         })
 class ScrapperControllerIntegrationTest {

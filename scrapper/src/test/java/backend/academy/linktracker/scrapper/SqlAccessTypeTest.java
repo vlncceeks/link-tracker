@@ -18,7 +18,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
 @Testcontainers
-@TestPropertySource(properties = "app.access-type=SQL")
+@TestPropertySource(properties = {
+    "app.access-type=SQL",
+    "app.message-sender-type=DIRECTLY"
+})
 public class SqlAccessTypeTest {
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");

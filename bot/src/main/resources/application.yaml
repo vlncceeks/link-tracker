@@ -24,3 +24,18 @@ app:
 
 scrapper:
   base-url: ${SCRAPPER_URL:http://localhost:8082}
+  connect-timeout: 3s
+  read-timeout: 5s
+  retryable-statuses: [429, 500, 502, 503, 504]
+
+resilience4j:
+  retry:
+    instances:
+      scrapperRetry:
+        max-attempts: 3
+        wait-duration: 1s
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - backend.academy.linktracker.bot.application.exception.RetryableException
+        ignore-exceptions:
+          - backend.academy.linktracker.bot.application.exception.ScrapperClientException

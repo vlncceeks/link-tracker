@@ -5,6 +5,7 @@ import backend.academy.linktracker.bot.application.dto.request.AddLinkRequest;
 import backend.academy.linktracker.bot.application.dto.request.RemoveLinkRequest;
 import backend.academy.linktracker.bot.application.dto.response.LinkResponse;
 import backend.academy.linktracker.bot.application.dto.response.ListLinksResponse;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,18 +21,21 @@ public class ScrapperClientWrapper implements ScrapperClient {
 
     private final ScrapperClientImpl client;
 
+    @Retry(name = "scrapperRetry")
     @Override
     public void registerChat(Long chatId) {
         logger.atInfo().addKeyValue("chatId", chatId).log("Регистрация чата в Scrapper");
         client.getRestClient().post().uri("/tg-chat/{id}", chatId).retrieve().toBodilessEntity();
     }
 
+    @Retry(name = "scrapperRetry")
     @Override
     public void deleteChat(Long chatId) {
         logger.atInfo().addKeyValue("chatId", chatId).log("Удаление чата из Scrapper");
         client.getRestClient().delete().uri("/tg-chat/{id}", chatId).retrieve().toBodilessEntity();
     }
 
+    @Retry(name = "scrapperRetry")
     @Override
     public ListLinksResponse getLinks(Long chatId) {
         return client.getRestClient()
@@ -42,6 +46,7 @@ public class ScrapperClientWrapper implements ScrapperClient {
                 .body(ListLinksResponse.class);
     }
 
+    @Retry(name = "scrapperRetry")
     @Override
     public LinkResponse addLink(Long chatId, AddLinkRequest request) {
         logger.atInfo()
@@ -58,6 +63,7 @@ public class ScrapperClientWrapper implements ScrapperClient {
                 .body(LinkResponse.class);
     }
 
+    @Retry(name = "scrapperRetry")
     @Override
     public LinkResponse removeLink(Long chatId, RemoveLinkRequest request) {
         logger.atInfo()

@@ -18,7 +18,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
 @Testcontainers
-@TestPropertySource(properties = "app.access-type=ORM")
+@TestPropertySource(properties = {
+    "app.access-type=ORM",
+    "app.message-sender-type=DIRECTLY"
+})
 public class OrmAccessTypeTest {
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
