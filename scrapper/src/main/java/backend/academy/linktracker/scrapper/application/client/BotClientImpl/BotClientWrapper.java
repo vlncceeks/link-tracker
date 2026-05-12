@@ -3,6 +3,7 @@ package backend.academy.linktracker.scrapper.application.client.BotClientImpl;
 import backend.academy.linktracker.scrapper.application.client.MessageSender;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
 import backend.academy.linktracker.scrapper.application.exception.BotClientException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ public class BotClientWrapper implements MessageSender {
     private static final Logger logger = LoggerFactory.getLogger(BotClientWrapper.class);
     private final BotClientImpl botClient;
 
+    @CircuitBreaker(name = "botCB")
     @Retry(name = "botRetry")
     @Override
     public void send(LinkUpdateRequest request) {

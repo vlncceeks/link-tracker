@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -30,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ActiveProfiles("test")
 @EnableWireMock(@ConfigureWireMock(port = 8089))
 @TestPropertySource(properties = "scrapper.base-url=http://localhost:8089")
+@Import(KafkaTestConfig.class)
 class ScrapperRetryTest {
 
     @InjectWireMock

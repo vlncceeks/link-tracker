@@ -37,7 +37,7 @@ import org.springframework.test.context.TestPropertySource;
                 .withUserConfiguration(MessageSenderConfig.class)
                 .withBean(KafkaTemplate.class, () -> Mockito.mock(KafkaTemplate.class))
                 .withBean(BotClientImpl.class, () -> Mockito.mock(BotClientImpl.class))
-                .withPropertyValues("app.message-sender-type=DIRECTLYq");
+                .withPropertyValues("app.message-sender-type=DIRECTLY");
 
         runner.run(context -> {
             assertThat(context.getBean(MessageSender.class)).isInstanceOf(BotClientWrapper.class);

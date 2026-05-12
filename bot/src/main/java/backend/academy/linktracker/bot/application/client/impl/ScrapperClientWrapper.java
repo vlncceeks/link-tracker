@@ -5,6 +5,7 @@ import backend.academy.linktracker.bot.application.dto.request.AddLinkRequest;
 import backend.academy.linktracker.bot.application.dto.request.RemoveLinkRequest;
 import backend.academy.linktracker.bot.application.dto.response.LinkResponse;
 import backend.academy.linktracker.bot.application.dto.response.ListLinksResponse;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ public class ScrapperClientWrapper implements ScrapperClient {
 
     private final ScrapperClientImpl client;
 
+    @CircuitBreaker(name = "scrapperCB")
     @Retry(name = "scrapperRetry")
     @Override
     public void registerChat(Long chatId) {
@@ -28,6 +30,7 @@ public class ScrapperClientWrapper implements ScrapperClient {
         client.getRestClient().post().uri("/tg-chat/{id}", chatId).retrieve().toBodilessEntity();
     }
 
+    @CircuitBreaker(name = "scrapperCB")
     @Retry(name = "scrapperRetry")
     @Override
     public void deleteChat(Long chatId) {
@@ -35,6 +38,7 @@ public class ScrapperClientWrapper implements ScrapperClient {
         client.getRestClient().delete().uri("/tg-chat/{id}", chatId).retrieve().toBodilessEntity();
     }
 
+    @CircuitBreaker(name = "scrapperCB")
     @Retry(name = "scrapperRetry")
     @Override
     public ListLinksResponse getLinks(Long chatId) {
@@ -46,6 +50,7 @@ public class ScrapperClientWrapper implements ScrapperClient {
                 .body(ListLinksResponse.class);
     }
 
+    @CircuitBreaker(name = "scrapperCB")
     @Retry(name = "scrapperRetry")
     @Override
     public LinkResponse addLink(Long chatId, AddLinkRequest request) {
@@ -63,6 +68,7 @@ public class ScrapperClientWrapper implements ScrapperClient {
                 .body(LinkResponse.class);
     }
 
+    @CircuitBreaker(name = "scrapperCB")
     @Retry(name = "scrapperRetry")
     @Override
     public LinkResponse removeLink(Long chatId, RemoveLinkRequest request) {

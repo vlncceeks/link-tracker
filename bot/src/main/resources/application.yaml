@@ -39,3 +39,13 @@ resilience4j:
           - backend.academy.linktracker.bot.application.exception.RetryableException
         ignore-exceptions:
           - backend.academy.linktracker.bot.application.exception.ScrapperClientException
+  circuitbreaker:
+    instances:
+      scrapperCB:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 100
+        permitted-number-of-calls-in-half-open-state: 5
+        wait-duration-in-open-state: 1s
+        register-health-indicator: true
