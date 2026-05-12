@@ -23,62 +23,17 @@ services:
       - redis-data:/data
     command: redis-server --appendonly yes
 
-  valkey-node-0:
+  valkey:
     image: valkey/valkey:latest
     ports:
-      - "16379:6379"
-    volumes:
-      - valkey-cluster_data-0:/data
-    command: >
-      valkey-server
-      --cluster-enabled yes
-      --cluster-config-file nodes.conf
-      --cluster-node-timeout 5000
-      --requirepass bitnami
-      --masterauth bitnami
-
-  valkey-node-1:
-    image: valkey/valkey:latest
-    ports:
-      - "16380:6379"
-    volumes:
-      - valkey-cluster_data-1:/data
-    command: >
-      valkey-server
-      --cluster-enabled yes
-      --cluster-config-file nodes.conf
-      --cluster-node-timeout 5000
-      --requirepass bitnami
-      --masterauth bitnami
-
-  valkey-node-2:
-    image: valkey/valkey:latest
-    ports:
-      - "16381:6379"
-    volumes:
-      - valkey-cluster_data-2:/data
-    command: >
-      valkey-server
-      --cluster-enabled yes
-      --cluster-config-file nodes.conf
-      --cluster-node-timeout 5000
-      --requirepass bitnami
-      --masterauth bitnami
-
-  valkey-cluster-init:
-    image: valkey/valkey:latest
-    depends_on:
-      - valkey-node-0
-      - valkey-node-1
-      - valkey-node-2
-    command: bash -c "sleep 5 && valkey-cli -a bitnami --cluster create valkey-node-0:6379 valkey-node-1:6379 valkey-node-2:6379 --cluster-replicas 0 --cluster-yes"
-    restart: "no"
+      - "6380:6379"
+    command: valkey-server --requirepass bitnami
 
   kafka-1:
     image: apache/kafka:3.7.0
     container_name: kafka-1
     ports:
-      - "9092:9092"
+      - "9092:29092"
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -97,7 +52,7 @@ services:
     image: apache/kafka:3.7.0
     container_name: kafka-2
     ports:
-      - "9094:9092"
+      - "9094:29094"
     environment:
       KAFKA_NODE_ID: 2
       KAFKA_PROCESS_ROLES: broker,controller
@@ -116,7 +71,7 @@ services:
     image: apache/kafka:3.7.0
     container_name: kafka-3
     ports:
-      - "9095:9092"
+      - "9095:29095"
     environment:
       KAFKA_NODE_ID: 3
       KAFKA_PROCESS_ROLES: broker,controller
@@ -150,6 +105,3 @@ services:
 volumes:
   redis-data:
   postgres_data:
-  valkey-cluster_data-2:
-  valkey-cluster_data-1:
-  valkey-cluster_data-0:
