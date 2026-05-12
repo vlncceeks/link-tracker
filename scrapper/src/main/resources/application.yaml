@@ -48,6 +48,8 @@ app:
     thread-count: 4
   kafka:
     topic: link-updates
+  rate-limit:
+    requests-per-second: 10
 
 bot:
   base-url: ${BOT_URL:http://localhost:8081}
