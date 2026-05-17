@@ -15,11 +15,13 @@ import backend.academy.linktracker.scrapper.application.dto.request.RemoveLinkRe
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -47,11 +49,18 @@ class ScrapperControllerIntegrationTest {
 
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
         if (chatRepository instanceof Clearable c) c.clear();
         if (linkRepository instanceof Clearable c) c.clear();
+        Set<String> keys = redisTemplate.keys("rate-limit:*");
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
     }
 
     private static final String TEST_URL = "https://github.com/user/repo";

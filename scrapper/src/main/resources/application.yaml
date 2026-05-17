@@ -41,7 +41,6 @@ app:
     token: ${GITHUB_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
     base-url: https://api.github.com
   access-type: ${ACCESS_TYPE:ORM}
-  message-sender-type: ${MESSAGE_SENDER_TYPE:KAFKA}
   scheduler:
     interval: 30000
     batch-size: 1000

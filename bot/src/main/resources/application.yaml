@@ -21,6 +21,8 @@ app:
     topic: link-updates
     retry:
       attempts: 3
+  rate-limit:
+    requests-per-second: 10
 
 scrapper:
   base-url: ${SCRAPPER_URL:http://localhost:8082}

@@ -1,14 +1,13 @@
 package backend.academy.linktracker.scrapper.application.client.BotClientImpl;
 
 import backend.academy.linktracker.scrapper.application.exception.BotClientException;
+import backend.academy.linktracker.scrapper.application.exception.RetryableException;
 import java.io.IOException;
 import java.util.Set;
-import backend.academy.linktracker.scrapper.application.exception.RetryableException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestClient;

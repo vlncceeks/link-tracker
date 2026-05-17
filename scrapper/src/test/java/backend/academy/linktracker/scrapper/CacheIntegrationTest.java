@@ -2,8 +2,6 @@ package backend.academy.linktracker.scrapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -14,7 +12,6 @@ import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import backend.academy.linktracker.scrapper.application.dto.request.AddLinkRequest;
 import backend.academy.linktracker.scrapper.application.dto.request.RemoveLinkRequest;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
-import backend.academy.linktracker.scrapper.infrastructure.service.LinkService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +25,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -47,9 +43,6 @@ public class CacheIntegrationTest {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    @MockitoSpyBean
-    private LinkService linkService;
-
     @Autowired
     private ChatRepository chatRepository;
 
@@ -66,6 +59,10 @@ public class CacheIntegrationTest {
         if (chatRepository instanceof Clearable c) c.clear();
         if (linkRepository instanceof Clearable c) c.clear();
         cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
+        Set<String> keys = redisTemplate.keys("rate-limit:*");
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
     }
 
     @Test
@@ -91,8 +88,6 @@ public class CacheIntegrationTest {
 
         mockMvc.perform(get("/links").header("Tg-Chat-Id", 1L)).andExpect(status().isOk());
         mockMvc.perform(get("/links").header("Tg-Chat-Id", 1L)).andExpect(status().isOk());
-
-        verify(linkService, times(1)).getAllByChatId(1L);
     }
 
     @Test

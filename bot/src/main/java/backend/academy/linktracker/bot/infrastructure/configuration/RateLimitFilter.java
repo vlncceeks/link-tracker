@@ -1,12 +1,13 @@
-package backend.academy.linktracker.scrapper.infrastructure.configuration;
+package backend.academy.linktracker.bot.infrastructure.configuration;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -14,25 +15,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
+@RequiredArgsConstructor
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private final StringRedisTemplate redisTemplate;
 
-    public RateLimitFilter(@Autowired(required = false) StringRedisTemplate redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
-
     @Value("${app.rate-limit.requests-per-second:10}")
     private int requestsPerSecond;
+
+    @PostConstruct
+    void init() {
+        System.out.println("=== RateLimitFilter requestsPerSecond = " + requestsPerSecond);
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        if (redisTemplate == null) {
-            chain.doFilter(request, response);
-            return;
-        }
-
         String ip = request.getRemoteAddr();
         String key = "rate-limit:" + ip;
 
