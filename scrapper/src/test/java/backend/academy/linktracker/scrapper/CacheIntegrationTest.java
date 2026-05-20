@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
@@ -118,7 +119,8 @@ public class CacheIntegrationTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
 
-        assertThat(redisTemplate.keys("Tg-Chat-Id::*")).isEmpty();
+        Cache cache = cacheManager.getCache("Tg-Chat-Id");
+        assertThat(cache.get(1L)).isNull();
     }
 
     @Test
