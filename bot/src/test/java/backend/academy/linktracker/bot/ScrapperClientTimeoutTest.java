@@ -1,5 +1,13 @@
 package backend.academy.linktracker.bot;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+
 import backend.academy.linktracker.bot.application.client.impl.ScrapperClientImpl;
 import backend.academy.linktracker.bot.application.client.impl.ScrapperClientWrapper;
 import backend.academy.linktracker.bot.application.client.impl.ScrapperFactory;
@@ -9,18 +17,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.wiremock.spring.EnableWireMock;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import org.springframework.http.HttpHeaders;
 import org.wiremock.spring.InjectWireMock;
 import tools.jackson.databind.ObjectMapper;
 
@@ -40,29 +40,23 @@ class ScrapperClientTimeoutTest {
     @BeforeEach
     void setUp() {
         ScrapperProperties testProperties = new ScrapperProperties(
-            "http://localhost:" + wireMock.port(),
-            properties.connectTimeout(),
-            properties.readTimeout()
-        );
-        ScrapperClientImpl client = new ScrapperClientImpl(
-            new ScrapperFactory(), testProperties, new ObjectMapper()
-        );
+                "http://localhost:" + wireMock.port(), properties.connectTimeout(), properties.readTimeout());
+        ScrapperClientImpl client = new ScrapperClientImpl(new ScrapperFactory(), testProperties, new ObjectMapper());
         scrapperClient = new ScrapperClientWrapper(client);
     }
 
     @Test
     void getLinks_shouldFailWithTimeout_whenServiceIsSlow() {
         stubFor(get(urlEqualTo("/links"))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .withBody("{\"links\":[]}")
-                .withFixedDelay(6000)));
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .withBody("{\"links\":[]}")
+                        .withFixedDelay(6000)));
 
         long start = System.currentTimeMillis();
 
-        assertThatThrownBy(() -> scrapperClient.getLinks(1L))
-            .isInstanceOf(Exception.class);
+        assertThatThrownBy(() -> scrapperClient.getLinks(1L)).isInstanceOf(Exception.class);
 
         long elapsed = System.currentTimeMillis() - start;
 
@@ -73,13 +67,12 @@ class ScrapperClientTimeoutTest {
     @Test
     void getLinks_shouldSucceed_whenServiceRespondsInTime() {
         stubFor(get(urlEqualTo("/links"))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .withBody("{\"links\":[]}")
-                .withFixedDelay(1000)));
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .withBody("{\"links\":[]}")
+                        .withFixedDelay(1000)));
 
-        assertThatCode(() -> scrapperClient.getLinks(1L))
-            .doesNotThrowAnyException();
+        assertThatCode(() -> scrapperClient.getLinks(1L)).doesNotThrowAnyException();
     }
 }
