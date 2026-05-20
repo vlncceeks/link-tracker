@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
@@ -66,6 +67,10 @@ public class CacheIntegrationTest {
         if (chatRepository instanceof Clearable c) c.clear();
         if (linkRepository instanceof Clearable c) c.clear();
         cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
+        Set<String> keys = redisTemplate.keys("rate-limit:*");
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
     }
 
     @Test
@@ -123,7 +128,8 @@ public class CacheIntegrationTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
 
-        assertThat(redisTemplate.keys("Tg-Chat-Id::*")).isEmpty();
+        Cache cache = cacheManager.getCache("Tg-Chat-Id");
+        assertThat(cache.get(1L)).isNull();
     }
 
     @Test
