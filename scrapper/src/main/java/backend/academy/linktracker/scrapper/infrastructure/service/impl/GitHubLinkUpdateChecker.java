@@ -2,6 +2,7 @@ package backend.academy.linktracker.scrapper.infrastructure.service.impl;
 
 import backend.academy.linktracker.scrapper.application.client.GitHubClient;
 import backend.academy.linktracker.scrapper.application.client.GitHubClientImpl.GitHubUrlParser;
+import backend.academy.linktracker.scrapper.application.dto.InternalUpdateEvent;
 import backend.academy.linktracker.scrapper.application.dto.response.GitHubEventResponse;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
@@ -31,7 +32,7 @@ public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
     }
 
     @Override
-    public Optional<String> check(TrackedLink link) {
+    public Optional<InternalUpdateEvent> check(TrackedLink link) {
         return GitHubUrlParser.parseUrl(link.getUrl()).flatMap(parts -> {
             try {
                 List<GitHubEventResponse> events =
@@ -61,22 +62,21 @@ public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
         });
     }
 
-    private String buildMessage(List<GitHubEventResponse> events) {
+    private InternalUpdateEvent buildMessage(List<GitHubEventResponse> events) {
         StringBuilder sb = new StringBuilder();
+        String author = "Unknown";
 
         for (GitHubEventResponse event : events) {
             switch (event.type()) {
                 case "PullRequestEvent" -> {
                     var pr = event.payload().pullRequest();
                     if (pr == null) break;
+                    author = event.actor().login();
                     sb.append("PR #")
                             .append(pr.number())
                             .append(" [")
                             .append(event.payload().action())
                             .append("]\n")
-                            .append("Автор: ")
-                            .append(event.actor().login())
-                            .append("\n")
                             .append("Время: ")
                             .append(event.createdAt())
                             .append("\n")
@@ -90,14 +90,12 @@ public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
                     String preview = issue.title() != null && issue.title().length() > 200
                             ? issue.title().substring(0, 197) + "..."
                             : issue.title();
+                    author = event.actor().login();
                     sb.append("Issue #")
                             .append(issue.number())
                             .append(" [")
                             .append(event.payload().action())
                             .append("]\n")
-                            .append("Автор: ")
-                            .append(event.actor().login())
-                            .append("\n")
                             .append("Время: ")
                             .append(event.createdAt())
                             .append("\n")
@@ -109,10 +107,8 @@ public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
                     String ref = event.payload().ref();
                     String head = event.payload().head();
                     String branch = ref != null ? ref.replace("refs/heads/", "") : "unknown";
+                    author = event.actor().login();
                     sb.append("Push в репозиторий\n")
-                            .append("Автор: ")
-                            .append(event.actor().login())
-                            .append("\n")
                             .append("Время: ")
                             .append(event.createdAt())
                             .append("\n")
@@ -127,6 +123,6 @@ public class GitHubLinkUpdateChecker implements LinkUpdateChecker {
             }
         }
 
-        return sb.toString().trim();
+        return new InternalUpdateEvent(author, sb.toString().trim());
     }
 }

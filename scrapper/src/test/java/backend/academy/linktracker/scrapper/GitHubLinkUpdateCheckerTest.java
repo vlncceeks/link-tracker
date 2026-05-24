@@ -7,6 +7,7 @@ import backend.academy.linktracker.scrapper.application.client.GitHubClient;
 import backend.academy.linktracker.scrapper.application.dto.GitHubActor;
 import backend.academy.linktracker.scrapper.application.dto.GitHubEventPayload;
 import backend.academy.linktracker.scrapper.application.dto.GitHubIssue;
+import backend.academy.linktracker.scrapper.application.dto.InternalUpdateEvent;
 import backend.academy.linktracker.scrapper.application.dto.response.GitHubEventResponse;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
@@ -57,12 +58,13 @@ class GitHubLinkUpdateCheckerTest {
 
         when(gitHubClient.fetchEvents("user", "repo", link.getLastCheckedAt())).thenReturn(List.of(event));
 
-        Optional<String> result = checker.check(link);
+        Optional<InternalUpdateEvent> result = checker.check(link);
 
         assertTrue(result.isPresent());
-        String message = result.get();
+        String author = result.get().author();
+        String message = result.get().description();
         assertTrue(message.contains("Issue #42"), "Должен содержать номер Issue");
-        assertTrue(message.contains("octocat"), "Должен содержать имя автора");
+        assertTrue(author.contains("octocat"), "Должен содержать имя автора");
         assertTrue(message.contains("Bug in production"), "Должен содержать превью");
     }
 }

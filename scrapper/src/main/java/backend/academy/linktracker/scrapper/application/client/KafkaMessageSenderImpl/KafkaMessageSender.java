@@ -18,17 +18,28 @@ public class KafkaMessageSender implements MessageSender {
     @Value("${app.kafka.topic}")
     private String topic;
 
+    @Value("${app.kafka.ai-topic}")
+    private String aiTopic;
+
+    @Value("${app.scheduler.ai-enabled}")
+    private boolean schedulerAiEnabled;
+
     @Override
     public void send(LinkUpdateRequest request) {
-        CompletableFuture<SendResult<String, LinkUpdateRequest>> future = kafkaTemplate.send(topic, request);
+        CompletableFuture<SendResult<String, LinkUpdateRequest>> future;
+        if (schedulerAiEnabled) future = kafkaTemplate.send(aiTopic, request);
+        else future = kafkaTemplate.send(topic, request);
+
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                logger.atInfo().addKeyValue("url", request.url()).log("Sent message to topic link-updates");
+                logger.atInfo()
+                        .addKeyValue("url", request.url())
+                        .log("Sent message to topic " + (schedulerAiEnabled ? aiTopic : topic));
             } else {
                 logger.atError()
                         .addKeyValue("url", request.url())
                         .setCause(ex)
-                        .log("Unable to sent message to topic link-updates");
+                        .log("Unable to sent message to topic " + (schedulerAiEnabled ? aiTopic : topic));
             }
         });
     }

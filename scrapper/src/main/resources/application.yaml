@@ -45,8 +45,10 @@ app:
     interval: 30000
     batch-size: 1000
     thread-count: 4
+    ai-enabled: true
   kafka:
     topic: link-updates
+    ai-topic: raw-updates
   rate-limit:
     requests-per-second: 10
 
