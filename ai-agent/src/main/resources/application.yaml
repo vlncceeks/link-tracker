@@ -23,3 +23,18 @@ app:
 
   summarization:
     threshold: 200
+
+  prioritization:
+    high-keywords:
+      - critical
+      - urgent
+      - breaking
+      - security
+    low-keywords:
+      - minor
+      - typo
+      - chore
+      - docs
+
+  grouping:
+    window-ms: 30000
