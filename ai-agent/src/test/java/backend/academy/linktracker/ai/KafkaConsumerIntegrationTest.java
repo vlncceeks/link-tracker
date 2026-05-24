@@ -39,7 +39,7 @@ class KafkaConsumerIntegrationTest {
 
     @Test
     void shouldConsumeValidMessage_andPassToProcessUpdateService() throws Exception {
-        RawUpdate rawUpdate = new RawUpdate(1, "Valid description", List.of(100L, 200L));
+        RawUpdate rawUpdate = new RawUpdate(1, "author", "Valid description", List.of(100L, 200L));
 
         kafkaTemplate.send(TOPIC, rawUpdate);
 

@@ -28,7 +28,7 @@ class FilteringServiceTest {
         when(properties.stopWords()).thenReturn(List.of("spam", "ad"));
         when(properties.excludedAuthors()).thenReturn(List.of());
 
-        RawUpdate update = new RawUpdate(1, "This is a spam message", List.of(123L, 124L));
+        RawUpdate update = new RawUpdate(1, "author", "This is a spam message", List.of(123L, 124L));
 
         assertThat(filteringService.isRelevant(update)).isFalse();
     }
@@ -39,7 +39,7 @@ class FilteringServiceTest {
         when(properties.stopWords()).thenReturn(List.of());
         when(properties.excludedAuthors()).thenReturn(List.of("banned_user"));
 
-        RawUpdate update = new RawUpdate(2, "Normal text by banned_user here", List.of(123L, 124L));
+        RawUpdate update = new RawUpdate(2, "banned_user", "Normal text here", List.of(123L, 124L));
 
         assertThat(filteringService.isRelevant(update)).isFalse();
     }
@@ -50,7 +50,7 @@ class FilteringServiceTest {
         when(properties.stopWords()).thenReturn(List.of());
         when(properties.excludedAuthors()).thenReturn(List.of());
 
-        RawUpdate update = new RawUpdate(3, "Short", List.of(123L, 124L));
+        RawUpdate update = new RawUpdate(3, "author", "Short", List.of(123L, 124L));
 
         assertThat(filteringService.isRelevant(update)).isFalse();
     }
@@ -61,7 +61,7 @@ class FilteringServiceTest {
         when(properties.stopWords()).thenReturn(List.of("spam"));
         when(properties.excludedAuthors()).thenReturn(List.of("banned_user"));
 
-        RawUpdate update = new RawUpdate(4, "This is a completely valid update", List.of(123L, 124L));
+        RawUpdate update = new RawUpdate(4, "author", "This is a completely valid update", List.of(123L, 124L));
 
         assertThat(filteringService.isRelevant(update)).isTrue();
     }

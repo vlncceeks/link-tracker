@@ -33,13 +33,12 @@ public class FilteringService {
             }
         }
 
+        String author = rawUpdate.author();
         List<String> excludedAuthors = properties.excludedAuthors();
 
-        for (String excludedAuthor : excludedAuthors) {
-            if (description.contains(excludedAuthor)) {
-                logger.atInfo().addKeyValue("id", rawUpdate.id()).log("Update is not relevant");
-                return false;
-            }
+        if (excludedAuthors.contains(author)) {
+            logger.atInfo().addKeyValue("id", rawUpdate.id()).log("Update is not relevant");
+            return false;
         }
 
         logger.atInfo().addKeyValue("id", rawUpdate.id()).log("Update is relevant");
