@@ -9,8 +9,8 @@ spring:
 
 app:
   kafka:
-    input-topic: link-raw-updates
-    output-topic: link-processed-updates
+    input-topic: raw-updates
+    output-topic: processed-updates
 
   filtering:
     stop-words:
