@@ -1,16 +1,15 @@
 package backend.academy.linktracker.ai;
 
-import backend.academy.linktracker.ai.application.state.Priority;
-import backend.academy.linktracker.ai.infrastructure.properties.PrioritizationProperties;
-import backend.academy.linktracker.ai.infrastructure.service.PrioritizationService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import backend.academy.linktracker.ai.application.state.Priority;
+import backend.academy.linktracker.ai.infrastructure.properties.PrioritizationProperties;
+import backend.academy.linktracker.ai.infrastructure.service.PrioritizationService;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class PrioritizationServiceTest {
     private PrioritizationService service;

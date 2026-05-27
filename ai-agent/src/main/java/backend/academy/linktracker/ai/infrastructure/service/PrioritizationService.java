@@ -2,12 +2,12 @@ package backend.academy.linktracker.ai.infrastructure.service;
 
 import backend.academy.linktracker.ai.application.state.Priority;
 import backend.academy.linktracker.ai.infrastructure.properties.PrioritizationProperties;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

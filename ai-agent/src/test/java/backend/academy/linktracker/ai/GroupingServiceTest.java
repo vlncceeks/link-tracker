@@ -1,5 +1,9 @@
 package backend.academy.linktracker.ai;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import backend.academy.linktracker.ai.application.dto.ProcessedUpdate;
 import backend.academy.linktracker.ai.application.dto.RawUpdate;
 import backend.academy.linktracker.ai.application.state.Priority;
@@ -7,16 +11,12 @@ import backend.academy.linktracker.ai.infrastructure.properties.GroupingProperti
 import backend.academy.linktracker.ai.infrastructure.properties.PrioritizationProperties;
 import backend.academy.linktracker.ai.infrastructure.service.GroupingService;
 import backend.academy.linktracker.ai.infrastructure.service.PrioritizationService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class GroupingServiceTest {
     private GroupingService service;
@@ -47,8 +47,7 @@ class GroupingServiceTest {
         service.group(update3);
 
         ProcessedUpdate result = futureMap.get(123L).get();
-        assertThat(result.description())
-            .isEqualTo("""
+        assertThat(result.description()).isEqualTo("""
             1. Medium priority message
             2. High priority message
             3. Low priority message
@@ -56,8 +55,7 @@ class GroupingServiceTest {
         assertThat(result.priority()).isEqualTo(Priority.HIGH);
 
         ProcessedUpdate result2 = futureMap.get(124L).get();
-        assertThat(result2.description())
-            .isEqualTo("""
+        assertThat(result2.description()).isEqualTo("""
             1. Medium priority message
             2. Low priority message
             """);

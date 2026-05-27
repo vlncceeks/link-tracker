@@ -1,6 +1,8 @@
 package backend.academy.linktracker.ai.infrastructure.configuration;
 
 import backend.academy.linktracker.ai.application.dto.ProcessedUpdate;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,8 +12,6 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 public class KafkaProducerConfig {
@@ -28,5 +28,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, ProcessedUpdate> kafkaTemplate() {return new KafkaTemplate<>(producerFactory());}
+    public KafkaTemplate<String, ProcessedUpdate> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
+    }
 }

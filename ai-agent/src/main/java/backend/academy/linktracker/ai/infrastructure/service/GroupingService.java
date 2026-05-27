@@ -5,10 +5,6 @@ import backend.academy.linktracker.ai.application.dto.RawUpdate;
 import backend.academy.linktracker.ai.application.state.GroupState;
 import backend.academy.linktracker.ai.application.state.Priority;
 import backend.academy.linktracker.ai.infrastructure.properties.GroupingProperties;
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +15,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +27,7 @@ public class GroupingService {
     private final PrioritizationService prioritizationService;
     private final GroupingProperties properties;
     private final Map<Long, GroupState> groups = new ConcurrentHashMap<>();
-    private final ScheduledExecutorService scheduler =
-        Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public Map<Long, CompletableFuture<ProcessedUpdate>> group(RawUpdate update) {
         logger.atInfo().addKeyValue("id", update.id()).log("Grouping started");
@@ -38,22 +37,14 @@ public class GroupingService {
         for (Long chatId : update.chatIds()) {
             groups.compute(chatId, (id, state) -> {
                 if (state == null) {
-                    List<RawUpdate> updates =
-                        Collections.synchronizedList(
-                            new ArrayList<>()
-                        );
+                    List<RawUpdate> updates = Collections.synchronizedList(new ArrayList<>());
                     updates.add(update);
 
                     CompletableFuture<ProcessedUpdate> future = new CompletableFuture<>();
 
-                    GroupState newState =
-                        new GroupState(updates, future);
+                    GroupState newState = new GroupState(updates, future);
 
-                    scheduler.schedule(
-                        () -> flush(id),
-                        properties.windowMs(),
-                        TimeUnit.MILLISECONDS
-                    );
+                    scheduler.schedule(() -> flush(id), properties.windowMs(), TimeUnit.MILLISECONDS);
 
                     result.put(chatId, future);
                     return newState;
@@ -82,11 +73,10 @@ public class GroupingService {
         int id = updates.get(0).id();
         if (updates.size() == 1)
             return new ProcessedUpdate(
-                id,
-                updates.get(0).description(),
-                List.of(chatId),
-                prioritizationService.prioritize(updates.get(0).description())
-            );
+                    id,
+                    updates.get(0).description(),
+                    List.of(chatId),
+                    prioritizationService.prioritize(updates.get(0).description()));
 
         StringBuilder description = new StringBuilder();
         Priority maxPriority = Priority.LOW;

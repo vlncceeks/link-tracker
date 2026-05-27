@@ -1,5 +1,9 @@
 package backend.academy.linktracker.ai;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import backend.academy.linktracker.ai.application.dto.ProcessedUpdate;
 import backend.academy.linktracker.ai.application.dto.RawUpdate;
 import backend.academy.linktracker.ai.application.sender.KafkaMessageSender;
@@ -8,6 +12,11 @@ import backend.academy.linktracker.ai.infrastructure.service.FilteringService;
 import backend.academy.linktracker.ai.infrastructure.service.GroupingService;
 import backend.academy.linktracker.ai.infrastructure.service.ProcessUpdateService;
 import backend.academy.linktracker.ai.infrastructure.service.SummarizationService;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -21,16 +30,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ContextConfiguration(initializers = TestcontainersConfiguration.class)
@@ -57,7 +56,8 @@ class KafkaProducerIntegrationTest {
         summarizationService = mock(SummarizationService.class);
         groupingService = mock(GroupingService.class);
 
-        processUpdateService = new ProcessUpdateService(filteringService, summarizationService, groupingService, kafkaMessageSender);
+        processUpdateService =
+                new ProcessUpdateService(filteringService, summarizationService, groupingService, kafkaMessageSender);
     }
 
     @AfterEach
@@ -81,9 +81,8 @@ class KafkaProducerIntegrationTest {
     void messagePassAllSteps_shouldBePublishedToKafka() {
         RawUpdate update = new RawUpdate(1, "author", "Normal text here", List.of(123L, 124L));
         ProcessedUpdate processedUpdate = new ProcessedUpdate(1, "Normal text here", List.of(123L), Priority.MEDIUM);
-        Map<Long, CompletableFuture<ProcessedUpdate>> futures = Map.ofEntries(
-            Map.entry (123L, CompletableFuture.completedFuture(processedUpdate))
-        );
+        Map<Long, CompletableFuture<ProcessedUpdate>> futures =
+                Map.ofEntries(Map.entry(123L, CompletableFuture.completedFuture(processedUpdate)));
 
         when(filteringService.isRelevant(update)).thenReturn(true);
         when(summarizationService.summarize(update.description())).thenReturn("Normal text here");
@@ -91,16 +90,13 @@ class KafkaProducerIntegrationTest {
 
         processUpdateService.processUpdate(update);
 
-        ConsumerRecords<String, ProcessedUpdate> records =
-            consumer.poll(Duration.ofSeconds(5));
+        ConsumerRecords<String, ProcessedUpdate> records = consumer.poll(Duration.ofSeconds(5));
 
         assertThat(records.count()).isEqualTo(1);
 
-        ProcessedUpdate value =
-            records.iterator().next().value();
+        ProcessedUpdate value = records.iterator().next().value();
 
-        assertThat(value.description())
-            .isEqualTo("Normal text here");
+        assertThat(value.description()).isEqualTo("Normal text here");
     }
 
     @Test
@@ -110,8 +106,7 @@ class KafkaProducerIntegrationTest {
 
         processUpdateService.processUpdate(update);
 
-        ConsumerRecords<String, ProcessedUpdate> records =
-            consumer.poll(Duration.ofSeconds(5));
+        ConsumerRecords<String, ProcessedUpdate> records = consumer.poll(Duration.ofSeconds(5));
 
         assertThat(records.count()).isEqualTo(0);
     }

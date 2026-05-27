@@ -1,6 +1,7 @@
 package backend.academy.linktracker.bot.infrastructure.kafka;
 
 import backend.academy.linktracker.bot.application.dto.request.LinkUpdateRequest;
+import backend.academy.linktracker.bot.application.dto.request.ProcessedUpdate;
 import backend.academy.linktracker.bot.infrastructure.service.UpdateService;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,10 @@ public class LinkUpdateConsumer {
     @RetryableTopic(
             attempts = "${app.kafka.retry.attempts}",
             exclude = {DeserializationException.class, ValidationException.class})
-    @KafkaListener(topics = "${app.kafka.topic}", groupId = "bot-group")
+    @KafkaListener(
+            topics = "${app.kafka.topic}",
+            groupId = "bot-group",
+            containerFactory = "linkUpdateKafkaListenerContainerFactory")
     public void listenUpdate(LinkUpdateRequest request) {
         logger.atInfo()
                 .addKeyValue("url", request.url())
@@ -31,6 +35,19 @@ public class LinkUpdateConsumer {
                 .log("Получено обновление ссылки");
 
         updateService.receive(request);
+    }
+
+    @RetryableTopic(
+            attempts = "${app.kafka.retry.attempts}",
+            exclude = {DeserializationException.class, ValidationException.class})
+    @KafkaListener(
+            topics = "${app.kafka.ai-topic}",
+            groupId = "bot-group",
+            containerFactory = "processedUpdateKafkaListenerContainerFactory")
+    public void listenUpdate(ProcessedUpdate update) {
+        logger.atInfo().addKeyValue("id", update.id()).log("Получено обновление ссылки от Ai-Agent");
+
+        updateService.receive(update);
     }
 
     @DltHandler

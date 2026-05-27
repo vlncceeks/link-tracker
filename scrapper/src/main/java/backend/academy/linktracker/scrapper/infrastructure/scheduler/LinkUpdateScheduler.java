@@ -125,9 +125,11 @@ public class LinkUpdateScheduler {
                         .addKeyValue("chatCount", chatIds.size())
                         .log("Обнаружено обновление, отправляем уведомление");
 
-                if (properties.aiEnabled())
+                if (properties.aiEnabled()) {
                     messageSender.send(new LinkUpdateRequest(
                             link.getId(), updateEvent.author(), updateEvent.description(), chatIds));
+                    return;
+                }
 
                 messageSender.send(
                         new LinkUpdateRequest(link.getId(), link.getUrl(), updateEvent.description(), chatIds));

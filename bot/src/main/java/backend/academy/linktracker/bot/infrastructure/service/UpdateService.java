@@ -1,6 +1,7 @@
 package backend.academy.linktracker.bot.infrastructure.service;
 
 import backend.academy.linktracker.bot.application.dto.request.LinkUpdateRequest;
+import backend.academy.linktracker.bot.application.dto.request.ProcessedUpdate;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.request.SendMessage;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,12 @@ public class UpdateService {
 
         for (Long chatId : request.chatIds()) {
             bot.execute(new SendMessage(chatId, message));
+        }
+    }
+
+    public void receive(ProcessedUpdate update) {
+        for (Long chatId : update.chatIds()) {
+            bot.execute(new SendMessage(chatId, update.description()));
         }
     }
 }
