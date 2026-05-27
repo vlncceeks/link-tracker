@@ -1,6 +1,5 @@
 package backend.academy.linktracker.ai;
 
-import backend.academy.linktracker.ai.application.dto.RawUpdate;
 import backend.academy.linktracker.ai.application.state.Priority;
 import backend.academy.linktracker.ai.infrastructure.properties.PrioritizationProperties;
 import backend.academy.linktracker.ai.infrastructure.service.PrioritizationService;
@@ -28,16 +27,16 @@ class PrioritizationServiceTest {
         when(properties.highKeywords()).thenReturn(List.of("critical"));
         when(properties.lowKeywords()).thenReturn(List.of("critical"));
 
-        RawUpdate update = new RawUpdate(1, "author", "critical bug fix", List.of(123L, 124L));
-        assertThat(service.prioritize(update)).isEqualTo(Priority.HIGH);
+        String description = "critical bug fix";
+        assertThat(service.prioritize(description)).isEqualTo(Priority.HIGH);
     }
 
     @Test
     void shouldReturnLow_whenContainsLowKeywords() {
         when(properties.lowKeywords()).thenReturn(List.of("minor"));
 
-        RawUpdate update = new RawUpdate(1, "author", "minor bug fix", List.of(123L, 124L));
-        assertThat(service.prioritize(update)).isEqualTo(Priority.LOW);
+        String description = "minor bug fix";
+        assertThat(service.prioritize(description)).isEqualTo(Priority.LOW);
     }
 
     @Test
@@ -45,7 +44,7 @@ class PrioritizationServiceTest {
         when(properties.highKeywords()).thenReturn(List.of("critical"));
         when(properties.lowKeywords()).thenReturn(List.of("minor"));
 
-        RawUpdate update = new RawUpdate(1, "author", "bug fix", List.of(123L, 124L));
-        assertThat(service.prioritize(update)).isEqualTo(Priority.MEDIUM);
+        String description = "bug fix";
+        assertThat(service.prioritize(description)).isEqualTo(Priority.MEDIUM);
     }
 }
