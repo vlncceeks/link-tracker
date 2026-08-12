@@ -5,12 +5,15 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import backend.academy.linktracker.scrapper.application.Clearable;
 import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import backend.academy.linktracker.scrapper.application.dto.request.AddLinkRequest;
 import backend.academy.linktracker.scrapper.application.dto.request.RemoveLinkRequest;
+import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
+import backend.academy.linktracker.scrapper.application.dto.response.ListLinksResponse;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
@@ -53,6 +56,9 @@ public class CacheIntegrationTest {
     @Autowired
     private CacheManager cacheManager;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
@@ -73,17 +79,19 @@ public class CacheIntegrationTest {
 
         mockMvc.perform(get("/links").header("Tg-Chat-Id", 1L)).andExpect(status().isOk());
 
-        Set<String> keys = redisTemplate.keys("Tg-Chat-Id::*");
-        assertThat(keys).isNotEmpty();
+        Cache cache = cacheManager.getCache("Tg-Chat-Id");
 
-        String cachedValue = redisTemplate.opsForValue().get(keys.iterator().next());
-        assertThat(cachedValue).isNotNull();
-        assertThatCode(() -> objectMapper.readTree(cachedValue)).doesNotThrowAnyException();
-        assertThat(cachedValue).contains("github.com/user/repo");
+        Cache.ValueWrapper wrapper = cache.get(1L);
+
+        assertThat(wrapper).isNotNull();
+
+        ListLinksResponse response = (ListLinksResponse) wrapper.get();
+
+        assertThat(response.links()).extracting(LinkResponse::url).contains("https://github.com/user/repo");
     }
 
     @Test
-    void getLinks_secondRequest_shouldHitCache() throws Exception {
+    void getLinks_secondRequest_shouldUseCache() throws Exception {
         registerChat(1L);
         addLink(1L, "https://github.com/user/repo");
 
@@ -97,24 +105,31 @@ public class CacheIntegrationTest {
         addLink(1L, "https://github.com/user/repo");
 
         mockMvc.perform(get("/links").header("Tg-Chat-Id", 1L)).andExpect(status().isOk());
-        assertThat(redisTemplate.keys("Tg-Chat-Id::*")).isNotEmpty();
+
+        Cache cache = cacheManager.getCache("Tg-Chat-Id");
+
+        Cache.ValueWrapper wrapper = cache.get(1L);
+        assertThat(wrapper).isNotNull();
 
         addLink(1L, "https://stackoverflow.com/q/123");
 
-        assertThat(redisTemplate.keys("Tg-Chat-Id::*")).isEmpty();
+        assertThat(cache.get(1L)).isNull();
     }
 
     @Test
     void deleteLink_shouldEvictCache() throws Exception {
-        registerChat(1L);
-        addLink(1L, "https://github.com/user/repo");
+        registerChat(2L);
+        addLink(2L, "https://github.com/user/repo");
 
-        mockMvc.perform(get("/links").header("Tg-Chat-Id", 1L)).andExpect(status().isOk());
-        assertThat(redisTemplate.keys("Tg-Chat-Id::*")).isNotEmpty();
+        mockMvc.perform(get("/links").header("Tg-Chat-Id", 2L)).andExpect(status().isOk());
+        Cache cache = cacheManager.getCache("Tg-Chat-Id");
+
+        Cache.ValueWrapper wrapper = cache.get(2L);
+        assertThat(wrapper).isNotNull();
 
         RemoveLinkRequest req = new RemoveLinkRequest("https://github.com/user/repo");
         mockMvc.perform(delete("/links")
-                        .header("Tg-Chat-Id", 1L)
+                        .header("Tg-Chat-Id", 2L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
@@ -129,11 +144,16 @@ public class CacheIntegrationTest {
         addLink(1L, "https://github.com/user/repo");
 
         mockMvc.perform(get("/links").header("Tg-Chat-Id", 1L)).andExpect(status().isOk());
-        assertThat(redisTemplate.keys("Tg-Chat-Id::*")).isNotEmpty();
+
+        Cache cache = cacheManager.getCache("Tg-Chat-Id");
+
+        Cache.ValueWrapper wrapper = cache.get(1L);
+        assertThat(wrapper).isNotNull();
 
         Thread.sleep(4000);
 
-        assertThat(redisTemplate.keys("Tg-Chat-Id::*")).isEmpty();
+        wrapper = cache.get(1L);
+        assertThat(wrapper).isNull();
 
         mockMvc.perform(get("/links").header("Tg-Chat-Id", 1L)).andExpect(status().isOk());
     }
