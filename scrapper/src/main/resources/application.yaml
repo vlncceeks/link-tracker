@@ -22,6 +22,15 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: com.fasterxml.jackson.databind.JsonSerializer
+  data:
+    redis:
+      host: localhost
+      port: 6380
+      password: bitnami
+  cache:
+    type: redis
+    redis:
+      time-to-live: 10m
 
 app:
   stackoverflow:
@@ -42,5 +51,5 @@ app:
 
 bot:
   base-url: ${BOT_URL:http://localhost:8081}
-
-
+  connect-timeout: 3s
+  read-timeout: 5s

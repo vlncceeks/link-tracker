@@ -20,6 +20,8 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,7 @@ public class LinkService {
     private final SchedulerProperties properties;
     private final ChatService chatService;
 
+    @Cacheable(value = "Tg-Chat-Id", key = "#chatId")
     public ListLinksResponse getAllByChatId(Long chatId) {
         List<LinkResponse> allLinks = new ArrayList<>();
         long lastId = 0;
@@ -58,6 +61,7 @@ public class LinkService {
     }
 
     @Transactional
+    @CacheEvict(value = "Tg-Chat-Id", key = "#chatId")
     public LinkResponse addLinkIntoChat(Long chatId, AddLinkRequest request) {
         if (!chatService.exists(chatId)) {
             throw new ChatNotFoundException(chatId);
@@ -106,6 +110,7 @@ public class LinkService {
     }
 
     @Transactional
+    @CacheEvict(value = "Tg-Chat-Id", key = "#chatId")
     public LinkResponse removeLinkFromChat(Long chatId, RemoveLinkRequest request) {
         if (!chatService.exists(chatId)) {
             throw new ChatNotFoundException(chatId);

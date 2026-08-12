@@ -25,19 +25,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
+import org.springframework.test.context.ContextConfiguration;
 
 @ExtendWith(MockitoExtension.class)
+@ContextConfiguration(initializers = TestcontainersConfiguration.class)
 public class TelegramBotExecuteCommandsTest {
     @Mock
     private ScrapperClient scrapperClient;
 
     @Mock
     private SessionService sessionService;
-
-    @Container
-    static GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
 
     private ListCommand listCommand;
     private TrackDialogHandler handler;
