@@ -86,13 +86,13 @@ class LinkUpdateConsumerTest {
                     return null;
                 })
                 .when(updateService)
-                .receive(any());
+                .receive((LinkUpdateRequest) any());
 
         kafkaTemplate.send(TOPIC, REQUEST).get();
 
         assertThat(latch.await(10, TimeUnit.SECONDS)).isTrue();
 
-        verify(updateService, times(1)).receive(any());
+        verify(updateService, times(1)).receive((LinkUpdateRequest) any());
     }
 
     @Test
@@ -105,7 +105,7 @@ class LinkUpdateConsumerTest {
                     throw new RuntimeException("fail");
                 })
                 .when(updateService)
-                .receive(any());
+                .receive((LinkUpdateRequest) any());
 
         doAnswer(invocation -> {
                     dltLatch.countDown();
@@ -118,7 +118,7 @@ class LinkUpdateConsumerTest {
 
         assertThat(retryLatch.await(30, TimeUnit.SECONDS)).isTrue();
         assertThat(dltLatch.await(15, TimeUnit.SECONDS)).isTrue();
-        verify(updateService, times(3)).receive(any());
+        verify(updateService, times(3)).receive((LinkUpdateRequest) any());
         verify(linkUpdateConsumer, times(1)).handleDltUpdate(any());
     }
 
@@ -126,7 +126,7 @@ class LinkUpdateConsumerTest {
     void whenDltConsumed_thenOnlyOnce() throws Exception {
         CountDownLatch dltLatch = new CountDownLatch(1);
 
-        doThrow(new RuntimeException("fail")).when(updateService).receive(any());
+        doThrow(new RuntimeException("fail")).when(updateService).receive((LinkUpdateRequest) any());
 
         doAnswer(invocation -> {
                     dltLatch.countDown();

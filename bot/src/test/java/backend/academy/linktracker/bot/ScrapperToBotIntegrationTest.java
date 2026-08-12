@@ -86,11 +86,11 @@ class ScrapperToBotIntegrationTest {
                     return null;
                 })
                 .when(linkUpdateConsumer)
-                .listenUpdate(any());
+                .listenUpdate((LinkUpdateRequest) any());
 
         kafkaTemplate.send(topic, request);
 
         assertThat(latch.await(30, TimeUnit.SECONDS)).isTrue();
-        verify(linkUpdateConsumer, times(1)).listenUpdate(any());
+        verify(linkUpdateConsumer, times(1)).listenUpdate((LinkUpdateRequest) any());
     }
 }

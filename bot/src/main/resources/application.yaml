@@ -19,6 +19,7 @@ app:
     debug: false
   kafka:
     topic: link-updates
+    ai-topic: processed-updates
     retry:
       attempts: 3
   rate-limit:

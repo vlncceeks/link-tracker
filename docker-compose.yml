@@ -194,6 +194,16 @@ services:
       bot:
         condition: service_started
 
+  ai-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: [ "java", "-jar", "ai-agent.jar" ]
+    container_name: ai-agent-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
+
   redis:
     image: redis:7-alpine
     container_name: redis
