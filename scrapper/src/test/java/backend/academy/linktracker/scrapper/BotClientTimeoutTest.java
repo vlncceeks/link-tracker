@@ -31,7 +31,8 @@ import org.wiremock.spring.InjectWireMock;
 @TestPropertySource(
         properties = {
             "spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration,org.springframework.boot.liquibase.autoconfigure.LiquibaseAutoConfiguration",
-            "app.access-type=MEMORY"
+            "app.access-type=MEMORY",
+            "app.message-sender-type=DIRECTLY"
         })
 public class BotClientTimeoutTest {
 
@@ -46,7 +47,10 @@ public class BotClientTimeoutTest {
     @BeforeEach
     void setUp() {
         BotProperties testProperties = new BotProperties(
-                "http://localhost:" + wireMock.port(), properties.connectTimeout(), properties.readTimeout());
+                "http://localhost:" + wireMock.port(),
+                properties.connectTimeout(),
+                properties.readTimeout(),
+                properties.retryableStatuses());
 
         BotClientImpl client = new BotClientImpl(new BotClientFactory(testProperties));
 

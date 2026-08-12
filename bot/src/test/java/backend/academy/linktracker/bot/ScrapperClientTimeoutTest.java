@@ -40,7 +40,11 @@ class ScrapperClientTimeoutTest {
     @BeforeEach
     void setUp() {
         ScrapperProperties testProperties = new ScrapperProperties(
-                "http://localhost:" + wireMock.port(), properties.connectTimeout(), properties.readTimeout());
+                "http://localhost:" + wireMock.port(),
+                properties.connectTimeout(),
+                properties.readTimeout(),
+                properties.retryableStatuses());
+
         ScrapperClientImpl client = new ScrapperClientImpl(new ScrapperFactory(), testProperties, new ObjectMapper());
         scrapperClient = new ScrapperClientWrapper(client);
     }

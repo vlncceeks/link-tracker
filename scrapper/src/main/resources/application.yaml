@@ -41,15 +41,39 @@ app:
     token: ${GITHUB_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
     base-url: https://api.github.com
   access-type: ${ACCESS_TYPE:ORM}
-  message-sender-type: ${MESSAGE_SENDER_TYPE:KAFKA}
   scheduler:
     interval: 30000
     batch-size: 1000
     thread-count: 4
   kafka:
     topic: link-updates
+  rate-limit:
+    requests-per-second: 10
 
 bot:
   base-url: ${BOT_URL:http://localhost:8081}
   connect-timeout: 3s
   read-timeout: 5s
+  retryable-statuses: [429, 500, 502, 503, 504]
+
+resilience4j:
+  retry:
+    instances:
+      botRetry:
+        max-attempts: 3
+        wait-duration: 1s
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+          - backend.academy.linktracker.scrapper.application.exception.RetryableException
+        ignore-exceptions:
+          - backend.academy.linktracker.scrapper.application.exception.BotClientException
+  circuitbreaker:
+    instances:
+      botCB:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 100
+        permitted-number-of-calls-in-half-open-state: 5
+        wait-duration-in-open-state: 1s
+        register-health-indicator: true

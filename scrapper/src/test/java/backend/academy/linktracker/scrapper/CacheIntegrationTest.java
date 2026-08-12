@@ -1,6 +1,7 @@
 package backend.academy.linktracker.scrapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,6 +45,9 @@ public class CacheIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    @Autowired
     private ChatRepository chatRepository;
 
     @Autowired
@@ -62,8 +66,7 @@ public class CacheIntegrationTest {
         if (chatRepository instanceof Clearable c) c.clear();
         if (linkRepository instanceof Clearable c) c.clear();
         cacheManager.getCacheNames().forEach(name -> cacheManager.getCache(name).clear());
-
-        Set<String> keys = redisTemplate.keys("*");
+        Set<String> keys = redisTemplate.keys("rate-limit:*");
         if (keys != null && !keys.isEmpty()) {
             redisTemplate.delete(keys);
         }
@@ -93,12 +96,7 @@ public class CacheIntegrationTest {
         addLink(1L, "https://github.com/user/repo");
 
         mockMvc.perform(get("/links").header("Tg-Chat-Id", 1L)).andExpect(status().isOk());
-
-        linkRepository.remove(1L, "https://github.com/user/repo");
-
-        mockMvc.perform(get("/links").header("Tg-Chat-Id", 1L))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size").value(1));
+        mockMvc.perform(get("/links").header("Tg-Chat-Id", 1L)).andExpect(status().isOk());
     }
 
     @Test

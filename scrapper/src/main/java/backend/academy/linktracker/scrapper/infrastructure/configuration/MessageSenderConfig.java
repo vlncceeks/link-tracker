@@ -4,12 +4,14 @@ import backend.academy.linktracker.scrapper.application.client.BotClientImpl.Bot
 import backend.academy.linktracker.scrapper.application.client.BotClientImpl.BotClientWrapper;
 import backend.academy.linktracker.scrapper.application.client.KafkaMessageSenderImpl.KafkaMessageSender;
 import backend.academy.linktracker.scrapper.application.client.MessageSender;
+import backend.academy.linktracker.scrapper.application.client.ResilientMessageSender;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.core.KafkaTemplate;
 
 @Configuration
@@ -22,14 +24,22 @@ public class MessageSenderConfig {
     private final BotClientImpl botClient;
 
     @Bean
-    @ConditionalOnProperty(name = "app.message-sender-type", havingValue = "KAFKA")
+    @Qualifier("kafka")
+    // @ConditionalOnProperty(name = "app.message-sender-type", havingValue = "KAFKA")
     public MessageSender kafkaMessageSender() {
         return new KafkaMessageSender(kafkaTemplate);
     }
 
     @Bean
-    @ConditionalOnProperty(name = "app.message-sender-type", havingValue = "DIRECTLY")
-    public MessageSender messageSender() {
+    @Qualifier("http")
+    // @ConditionalOnProperty(name = "app.message-sender-type", havingValue = "DIRECTLY")
+    public MessageSender httpMessageSender() {
         return new BotClientWrapper(botClient);
+    }
+
+    @Bean
+    @Primary
+    MessageSender messageSender(@Qualifier("http") MessageSender http, @Qualifier("kafka") MessageSender kafka) {
+        return new ResilientMessageSender(http, kafka);
     }
 }

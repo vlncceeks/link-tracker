@@ -32,7 +32,7 @@ import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
 @Testcontainers
-@TestPropertySource(properties = {"app.message-sender-type=KAFKA", "app.kafka.topic=link-updates-test"})
+@TestPropertySource(properties = {"app.kafka.topic=link-updates-test"})
 @ContextConfiguration(initializers = TestPostgresConfiguration.class)
 class KafkaMessageSenderTest {
     @Container
@@ -44,7 +44,7 @@ class KafkaMessageSenderTest {
     }
 
     @Autowired
-    @Qualifier("kafkaMessageSender")
+    @Qualifier("kafka")
     private MessageSender kafkaMessageSender;
 
     private Consumer<String, LinkUpdateRequest> consumer;
