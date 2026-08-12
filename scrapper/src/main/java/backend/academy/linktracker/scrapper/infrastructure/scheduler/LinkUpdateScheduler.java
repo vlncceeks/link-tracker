@@ -119,13 +119,18 @@ public class LinkUpdateScheduler {
 
     private void checkLink(LinkUpdateChecker checker, TrackedLink link, List<Long> chatIds, List<String> failed) {
         try {
-            checker.check(link).ifPresent(description -> {
+            checker.check(link).ifPresent(updateEvent -> {
                 logger.atInfo()
                         .addKeyValue("url", link.getUrl())
                         .addKeyValue("chatCount", chatIds.size())
                         .log("Обнаружено обновление, отправляем уведомление");
 
-                messageSender.send(new LinkUpdateRequest(link.getId(), link.getUrl(), description, chatIds));
+                if (properties.aiEnabled())
+                    messageSender.send(new LinkUpdateRequest(
+                            link.getId(), updateEvent.author(), updateEvent.description(), chatIds));
+
+                messageSender.send(
+                        new LinkUpdateRequest(link.getId(), link.getUrl(), updateEvent.description(), chatIds));
             });
         } catch (Exception e) {
             logger.atError().addKeyValue("url", link.getUrl()).setCause(e).log("Ошибка при проверке ссылки");

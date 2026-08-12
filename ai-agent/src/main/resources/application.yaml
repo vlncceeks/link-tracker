@@ -1,6 +1,25 @@
 server:
-  port: 8082
+  port: 8083
 
 spring:
   application:
     name: ai-agent
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092,localhost:9094,localhost:9095}
+
+app:
+  kafka:
+    input-topic: link-raw-updates
+    output-topic: link-processed-updates
+
+  filtering:
+    stop-words:
+      - spam
+      - ads
+      - promo
+    min-length: 20
+    excluded-authors:
+      - bot-user
+
+  summarization:
+    threshold: 200

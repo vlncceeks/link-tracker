@@ -28,18 +28,17 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
 @Testcontainers
-@TestPropertySource(properties = {"app.kafka.topic=link-updates-test", "app.scheduler.ai-enabled=false"})
+@TestPropertySource(properties = {"app.kafka.ai-topic=raw-updates-test", "app.scheduler.ai-enabled=true"})
 @ContextConfiguration(initializers = {TestPostgresConfiguration.class, TestKafkaConfiguration.class})
-class KafkaMessageSenderTest {
+class KafkaMessageSenderAiEnabledTest {
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
 
     @Autowired
     @Qualifier("kafka")
     private MessageSender kafkaMessageSender;
 
     private Consumer<String, LinkUpdateRequest> consumer;
-
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String bootstrapServers;
 
     @BeforeEach
     void setUp() {
@@ -54,7 +53,7 @@ class KafkaMessageSenderTest {
         consumerProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, LinkUpdateRequest.class);
 
         consumer = new DefaultKafkaConsumerFactory<String, LinkUpdateRequest>(consumerProps).createConsumer();
-        consumer.subscribe(List.of("link-updates-test"));
+        consumer.subscribe(List.of("raw-updates-test"));
     }
 
     @AfterEach
@@ -64,8 +63,7 @@ class KafkaMessageSenderTest {
 
     @Test
     void send_messageGoesToCorrectTopicWithCorrectContent() {
-        LinkUpdateRequest request =
-                new LinkUpdateRequest(1, "https://github.com/user/repo", "Новый коммит", List.of(1L, 2L));
+        LinkUpdateRequest request = new LinkUpdateRequest(1, "author", "Новый коммит", List.of(1L, 2L));
 
         kafkaMessageSender.send(request);
 
@@ -79,7 +77,7 @@ class KafkaMessageSenderTest {
 
         ConsumerRecord<String, LinkUpdateRequest> record = records.iterator().next();
 
-        assertThat(record.topic()).isEqualTo("link-updates-test");
+        assertThat(record.topic()).isEqualTo("raw-updates-test");
 
         LinkUpdateRequest received = record.value();
         assertThat(received.id()).isEqualTo(request.id());

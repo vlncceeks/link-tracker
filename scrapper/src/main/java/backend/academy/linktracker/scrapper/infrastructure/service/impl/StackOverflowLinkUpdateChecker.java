@@ -2,6 +2,7 @@ package backend.academy.linktracker.scrapper.infrastructure.service.impl;
 
 import backend.academy.linktracker.scrapper.application.client.StackOverflowClient;
 import backend.academy.linktracker.scrapper.application.client.StackOverflowClientImpl.StackOverflowClientWrapper;
+import backend.academy.linktracker.scrapper.application.dto.InternalUpdateEvent;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowAnswerResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowCommentResponse;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
@@ -31,7 +32,7 @@ public class StackOverflowLinkUpdateChecker implements LinkUpdateChecker {
     }
 
     @Override
-    public Optional<String> check(TrackedLink link) {
+    public Optional<InternalUpdateEvent> check(TrackedLink link) {
         return StackOverflowClientWrapper.parseUrl(link.getUrl()).flatMap(questionId -> {
             try {
                 var question = stackOverflowClient.fetchQuestion(questionId);
@@ -54,21 +55,21 @@ public class StackOverflowLinkUpdateChecker implements LinkUpdateChecker {
         });
     }
 
-    private String buildMessage(
+    private InternalUpdateEvent buildMessage(
             String questionTitle,
             List<StackOverflowAnswerResponse.AnswerItem> answers,
             List<StackOverflowCommentResponse.CommentItem> comments) {
         StringBuilder sb = new StringBuilder();
         sb.append("Вопрос: ").append(questionTitle).append("\n\n");
 
+        String author = "Unknown";
+
         for (var answer : answers) {
             String preview = answer.body() != null && answer.body().length() > 200
                     ? answer.body().substring(0, 197) + "..."
                     : answer.body();
+            author = answer.owner().displayName();
             sb.append("Новый ответ\n")
-                    .append("Автор: ")
-                    .append(answer.owner().displayName())
-                    .append("\n")
                     .append("Время: ")
                     .append(answer.creationDate())
                     .append("\n")
@@ -81,10 +82,8 @@ public class StackOverflowLinkUpdateChecker implements LinkUpdateChecker {
             String preview = comment.body() != null && comment.body().length() > 200
                     ? comment.body().substring(0, 197) + "..."
                     : comment.body();
+            author = comment.owner().displayName();
             sb.append("Новый комментарий\n")
-                    .append("Автор: ")
-                    .append(comment.owner().displayName())
-                    .append("\n")
                     .append("Время: ")
                     .append(comment.creationDate())
                     .append("\n")
@@ -93,6 +92,6 @@ public class StackOverflowLinkUpdateChecker implements LinkUpdateChecker {
                     .append("\n\n");
         }
 
-        return sb.toString().trim();
+        return new InternalUpdateEvent(author, sb.toString().trim());
     }
 }

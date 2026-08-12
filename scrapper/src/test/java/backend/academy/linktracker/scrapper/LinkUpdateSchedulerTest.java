@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import backend.academy.linktracker.scrapper.application.client.MessageSender;
+import backend.academy.linktracker.scrapper.application.dto.InternalUpdateEvent;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
 import backend.academy.linktracker.scrapper.application.dto.response.LinksPage;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
@@ -48,7 +49,7 @@ public class LinkUpdateSchedulerTest {
 
     @BeforeEach
     void setUp() {
-        properties = new SchedulerProperties(60, 1000, 4);
+        properties = new SchedulerProperties(60, 1000, 4, false);
         scheduler = new LinkUpdateScheduler(linkRepository, messageSender, List.of(checker), properties);
         scheduler.init();
     }
@@ -64,7 +65,7 @@ public class LinkUpdateSchedulerTest {
         when(linkRepository.getLinksWithChats(1000, 0L)).thenReturn(page);
         when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link));
         when(checker.supports(URL)).thenReturn(true);
-        when(checker.check(link)).thenReturn(Optional.of("Новый коммит"));
+        when(checker.check(link)).thenReturn(Optional.of(new InternalUpdateEvent("author", "Новый коммит")));
 
         scheduler.checkUpdates();
 
@@ -137,7 +138,7 @@ public class LinkUpdateSchedulerTest {
         when(linkRepository.find(CHAT_ID_1, URL)).thenReturn(Optional.of(link1));
         when(linkRepository.find(CHAT_ID_1, url2)).thenReturn(Optional.of(link2));
         when(checker.supports(anyString())).thenReturn(true);
-        when(checker.check(any())).thenReturn(Optional.of("Обновление"));
+        when(checker.check(any())).thenReturn(Optional.of(new InternalUpdateEvent("author", "Обновление")));
 
         scheduler.checkUpdates();
 
@@ -160,7 +161,7 @@ public class LinkUpdateSchedulerTest {
         when(linkRepository.find(CHAT_ID_1, url2)).thenReturn(Optional.of(link2));
         when(checker.supports(anyString())).thenReturn(true);
         when(checker.check(link1)).thenThrow(new RuntimeException("Сеть недоступна"));
-        when(checker.check(link2)).thenReturn(Optional.of("Обновление"));
+        when(checker.check(link2)).thenReturn(Optional.of(new InternalUpdateEvent("author", "Обновление")));
 
         scheduler.checkUpdates();
 

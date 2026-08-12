@@ -134,7 +134,8 @@ public class CacheIntegrationTest {
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
 
-        assertThat(cache.get(2L)).isNull();
+        Cache cache = cacheManager.getCache("Tg-Chat-Id");
+        assertThat(cache.get(1L)).isNull();
     }
 
     @Test

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import backend.academy.linktracker.scrapper.application.client.StackOverflowClient;
+import backend.academy.linktracker.scrapper.application.dto.InternalUpdateEvent;
 import backend.academy.linktracker.scrapper.application.dto.Owner;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowAnswerResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowResponse;
@@ -53,12 +54,12 @@ class StackOverflowLinkUpdateCheckerTest {
         when(stackOverflowClient.fetchAnswers(12345L, link.getLastCheckedAt())).thenReturn(List.of(answer));
         when(stackOverflowClient.fetchComments(12345L, link.getLastCheckedAt())).thenReturn(List.of());
 
-        Optional<String> result = checker.check(link);
+        Optional<InternalUpdateEvent> result = checker.check(link);
 
         assertThat(result).isPresent();
-        assertThat(result.get()).contains("Как работает JVM?");
-        assertThat(result.get()).contains("john_doe");
-        assertThat(result.get()).contains("Это текст ответа");
+        assertThat(result.get().description()).contains("Как работает JVM?");
+        assertThat(result.get().author()).contains("john_doe");
+        assertThat(result.get().description()).contains("Это текст ответа");
     }
 
     @Test
@@ -69,7 +70,7 @@ class StackOverflowLinkUpdateCheckerTest {
         when(stackOverflowClient.fetchAnswers(12345L, link.getLastCheckedAt()))
                 .thenThrow(new RestClientException("недоступен"));
 
-        Optional<String> result = checker.check(link);
+        Optional<InternalUpdateEvent> result = checker.check(link);
 
         assertThat(result).isEmpty();
     }
@@ -87,10 +88,11 @@ class StackOverflowLinkUpdateCheckerTest {
         when(stackOverflowClient.fetchAnswers(12345L, link.getLastCheckedAt())).thenReturn(List.of(answer));
         when(stackOverflowClient.fetchComments(12345L, link.getLastCheckedAt())).thenReturn(List.of());
 
-        Optional<String> result = checker.check(link);
+        Optional<InternalUpdateEvent> result = checker.check(link);
 
         assertThat(result).isPresent();
         String preview = result.get()
+                .description()
                 .lines()
                 .filter(l -> l.startsWith("Превью:"))
                 .findFirst()
