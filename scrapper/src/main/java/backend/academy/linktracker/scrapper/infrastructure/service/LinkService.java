@@ -11,6 +11,7 @@ import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import backend.academy.linktracker.scrapper.application.linktag.LinkTagRepository;
 import backend.academy.linktracker.scrapper.application.tag.Tag;
 import backend.academy.linktracker.scrapper.application.tag.TagRepository;
+import backend.academy.linktracker.scrapper.infrastructure.configuration.SchedulerProperties;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,16 +28,29 @@ public class LinkService {
     private final LinkRepository linkRepository;
     private final TagRepository tagRepository;
     private final LinkTagRepository linkTagRepository;
+    private final SchedulerProperties properties;
 
     public ListLinksResponse getAllByChatId(Long chatId) {
-        List<LinkResponse> links = linkRepository.findAllWithTags(chatId);
+        List<LinkResponse> allLinks = new ArrayList<>();
+        long lastId = 0;
+
+        while (true) {
+            List<LinkResponse> batch = linkRepository.findAllWithTags(chatId, properties.batchSize(), lastId);
+
+            if (batch.isEmpty()) break;
+
+            allLinks.addAll(batch);
+            lastId = batch.getLast().id();
+
+            if (batch.size() < properties.batchSize()) break;
+        }
 
         logger.atDebug()
                 .addKeyValue("chatId", chatId)
-                .addKeyValue("count", links.size())
+                .addKeyValue("count", allLinks.size())
                 .log("Receive list of links");
 
-        return new ListLinksResponse(links, links.size());
+        return new ListLinksResponse(allLinks, allLinks.size());
     }
 
     @Transactional
@@ -93,7 +107,21 @@ public class LinkService {
     }
 
     private List<String> getTagNamesForLink(Integer linkId) {
-        return linkTagRepository.findTagIdsByLinkId(linkId).stream()
+        List<Integer> allTagIds = new ArrayList<>();
+        long lastId = 0;
+
+        while (true) {
+            List<Integer> batch = linkTagRepository.findTagIdsByLinkId(linkId, properties.batchSize(), lastId);
+
+            if (batch.isEmpty()) break;
+
+            allTagIds.addAll(batch);
+            lastId = batch.getLast();
+
+            if (batch.size() < properties.batchSize()) break;
+        }
+
+        return allTagIds.stream()
                 .map(tagId -> tagRepository.findById(tagId))
                 .flatMap(Optional::stream)
                 .map(tag -> tag.name())

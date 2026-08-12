@@ -39,7 +39,7 @@ public class InMemoryLinkTagRepository implements LinkTagRepository {
     }
 
     @Override
-    public List<Integer> findTagIdsByLinkId(Integer linkId) {
+    public List<Integer> findTagIdsByLinkId(Integer linkId, int limit, long lastId) {
         Set<Integer> tags = linkToTags.get(linkId);
         if (tags == null) {
             return List.of();

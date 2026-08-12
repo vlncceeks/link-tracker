@@ -1,7 +1,6 @@
 package backend.academy.linktracker.bot.application.command;
 
 import backend.academy.linktracker.bot.application.state.TrackDialogHandler;
-import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
@@ -13,17 +12,11 @@ public class CommandDispatcher {
     private static final Logger logger = LoggerFactory.getLogger(CommandDispatcher.class);
     private final CommandRepository repository;
     private final TelegramBot bot;
-    private final TrackSessionRepository sessionRepository;
     private final TrackDialogHandler dialogHandler;
 
-    public CommandDispatcher(
-            CommandRepository repository,
-            TelegramBot bot,
-            TrackSessionRepository sessionRepository,
-            TrackDialogHandler dialogHandler) {
+    public CommandDispatcher(CommandRepository repository, TelegramBot bot, TrackDialogHandler dialogHandler) {
         this.repository = repository;
         this.bot = bot;
-        this.sessionRepository = sessionRepository;
         this.dialogHandler = dialogHandler;
     }
 
@@ -40,15 +33,9 @@ public class CommandDispatcher {
                 .addKeyValue("text", text)
                 .log("Получено сообщение");
 
-        if (sessionRepository.hasSession(chatId)) {
-            if (isInterruptingCommand(text)) {
-                sessionRepository.delete(chatId);
-                logger.atInfo().addKeyValue("chatId", chatId).log("Диалог /track прерван новой командой");
-            } else {
-                String response = dialogHandler.handle(chatId, text);
-                send(chatId, response);
-                return;
-            }
+        if (dialogHandler.hasSession(chatId)) {
+            handleDialog(text, chatId);
+            return;
         }
 
         if (!text.startsWith("/")) {
@@ -65,6 +52,20 @@ public class CommandDispatcher {
         String commandName = words[0].toLowerCase();
         String[] args = Arrays.copyOfRange(words, 1, words.length);
 
+        runCommand(commandName, username, chatId, args);
+    }
+
+    private void handleDialog(String text, Long chatId) {
+        if (isInterruptingCommand(text)) {
+            dialogHandler.deleteSession(chatId);
+            logger.atInfo().addKeyValue("chatId", chatId).log("Диалог /track прерван новой командой");
+        } else {
+            String response = dialogHandler.handle(chatId, text);
+            send(chatId, response);
+        }
+    }
+
+    private void runCommand(String commandName, String username, Long chatId, String[] args) {
         repository
                 .findCommand(commandName)
                 .ifPresentOrElse(

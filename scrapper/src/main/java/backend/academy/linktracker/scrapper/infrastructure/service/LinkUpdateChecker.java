@@ -1,4 +1,4 @@
-package backend.academy.linktracker.scrapper.application.service;
+package backend.academy.linktracker.scrapper.infrastructure.service;
 
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import java.util.Optional;

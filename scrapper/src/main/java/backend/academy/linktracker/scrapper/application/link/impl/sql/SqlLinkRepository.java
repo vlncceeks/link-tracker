@@ -1,6 +1,7 @@
 package backend.academy.linktracker.scrapper.application.link.impl.sql;
 
 import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
+import backend.academy.linktracker.scrapper.application.dto.response.LinksPage;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import java.sql.ResultSet;
@@ -8,7 +9,6 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,91 +62,58 @@ public class SqlLinkRepository implements LinkRepository {
     }
 
     @Override
-    public List<TrackedLink> findAll(Long chatId) {
-        int pageSize = 1000;
-        long lastId = 0;
-        List<TrackedLink> links = new ArrayList<>();
-
-        while (true) {
-            List<TrackedLink> page = jdbcClient
-                    .sql("""
-                    SELECT * FROM tracked_links WHERE chat_id = :chatId AND id > :lastId
-                    ORDER BY id LIMIT :limit
-                """)
-                    .param("chatId", chatId)
-                    .param("lastId", lastId)
-                    .param("limit", pageSize)
-                    .query(this::mapRow)
-                    .list();
-            if (page.isEmpty()) break;
-
-            links.addAll(page);
-            lastId = page.getLast().getId();
-            if (page.size() < pageSize) break;
-        }
-
-        return links;
+    public TrackedLink update(TrackedLink link) {
+        return jdbcClient
+                .sql("UPDATE tracked_links SET last_checked_at = :lastCheckedAt WHERE id = :linkId")
+                .param("lastCheckedAt", link.getLastCheckedAt())
+                .param("linkId", link.getId())
+                .query(this::mapRow)
+                .single();
     }
 
     @Override
-    public Map<String, List<Long>> getAllLinksWithChats() {
+    public LinksPage getLinksWithChats(int limit, long lastId) {
         record Row(Long id, String url, Long chatId) {}
-        int pageSize = 1000;
-        long lastId = 0;
-        Map<String, List<Long>> result = new HashMap<>();
+        Map<String, List<Long>> result = new LinkedHashMap<>();
 
-        while (true) {
-            List<Row> rows = jdbcClient
-                    .sql("SELECT id, url, chat_id FROM tracked_links WHERE id > :lastId ORDER BY id LIMIT :limit")
-                    .param("lastId", lastId)
-                    .param("limit", pageSize)
-                    .query((rs, rowNum) -> new Row(rs.getLong("id"), rs.getString("url"), rs.getLong("chat_id")))
-                    .list();
+        List<Row> rows = jdbcClient
+                .sql("SELECT id, url, chat_id FROM tracked_links WHERE id > :lastId ORDER BY id LIMIT :limit")
+                .param("lastId", lastId)
+                .param("limit", limit)
+                .query((rs, rowNum) -> new Row(rs.getLong("id"), rs.getString("url"), rs.getLong("chat_id")))
+                .list();
 
-            if (rows.isEmpty()) break;
+        if (rows.isEmpty()) return new LinksPage(Map.of(), lastId);
 
-            rows.forEach(row ->
-                    result.computeIfAbsent(row.url(), k -> new ArrayList<>()).add(row.chatId()));
+        rows.forEach(
+                row -> result.computeIfAbsent(row.url(), k -> new ArrayList<>()).add(row.chatId()));
 
-            lastId = rows.getLast().id();
-            if (rows.size() < pageSize) break;
-        }
-        return result;
+        return new LinksPage(result, rows.getLast().id());
     }
 
     @Override
-    public List<LinkResponse> findAllWithTags(Long chatId) {
+    public List<LinkResponse> findAllWithTags(Long chatId, int limit, long lastId) {
         record Row(int linkId, String url, String tagName) {}
 
+        List<Row> rows = jdbcClient
+                .sql("""
+                SELECT tl.id, tl.url, t.name as tag_name
+                FROM tracked_links tl
+                LEFT JOIN link_tags lt ON tl.id = lt.link_id
+                LEFT JOIN tags t ON lt.tag_id = t.id
+                WHERE tl.chat_id = :chatId AND tl.id > :lastId
+                ORDER BY tl.id
+                LIMIT :limit
+                """)
+                .param("chatId", chatId)
+                .param("lastId", lastId)
+                .param("limit", limit)
+                .query((rs, rowNum) -> new Row(rs.getInt("id"), rs.getString("url"), rs.getString("tag_name")))
+                .list();
+
         Map<Integer, List<Row>> grouped = new LinkedHashMap<>();
-        int pageSize = 1000;
-        int lastId = 0;
-
-        while (true) {
-            List<Row> rows = jdbcClient
-                    .sql("""
-                        SELECT tl.id, tl.url, t.name as tag_name
-                        FROM tracked_links tl
-                        LEFT JOIN link_tags lt ON tl.id = lt.link_id
-                        LEFT JOIN tags t ON lt.tag_id = t.id
-                        WHERE tl.chat_id = :chatId AND tl.id > :lastId
-                        ORDER BY tl.id
-                        LIMIT :limit
-                        """)
-                    .param("chatId", chatId)
-                    .param("lastId", lastId)
-                    .param("limit", pageSize)
-                    .query((rs, rowNum) -> new Row(rs.getInt("id"), rs.getString("url"), rs.getString("tag_name")))
-                    .list();
-
-            if (rows.isEmpty()) break;
-
-            rows.forEach(row -> grouped.computeIfAbsent(row.linkId(), k -> new ArrayList<>())
-                    .add(row));
-
-            lastId = rows.getLast().linkId();
-            if (rows.size() < pageSize) break;
-        }
+        rows.forEach(row ->
+                grouped.computeIfAbsent(row.linkId(), k -> new ArrayList<>()).add(row));
 
         return grouped.entrySet().stream()
                 .map(e -> {

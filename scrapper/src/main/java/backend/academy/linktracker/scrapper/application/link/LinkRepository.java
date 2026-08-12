@@ -1,8 +1,8 @@
 package backend.academy.linktracker.scrapper.application.link;
 
 import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
+import backend.academy.linktracker.scrapper.application.dto.response.LinksPage;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public interface LinkRepository {
@@ -12,9 +12,9 @@ public interface LinkRepository {
 
     Optional<TrackedLink> find(Long chatId, String url);
 
-    List<TrackedLink> findAll(Long chatId);
+    TrackedLink update(TrackedLink link);
 
-    Map<String, List<Long>> getAllLinksWithChats();
+    LinksPage getLinksWithChats(int limit, long lastId);
 
-    List<LinkResponse> findAllWithTags(Long chatId);
+    List<LinkResponse> findAllWithTags(Long chatId, int limit, long lastId);
 }

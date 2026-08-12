@@ -1,17 +1,16 @@
 package backend.academy.linktracker.bot.application.command.impl;
 
 import backend.academy.linktracker.bot.application.command.Command;
+import backend.academy.linktracker.bot.application.state.TrackCommandType;
 import backend.academy.linktracker.bot.application.state.TrackSession;
 import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class TrackCommand implements Command {
     private final TrackSessionRepository sessionRepository;
-
-    public TrackCommand(TrackSessionRepository sessionRepository) {
-        this.sessionRepository = sessionRepository;
-    }
 
     @Override
     public String getName() {
@@ -25,7 +24,7 @@ public class TrackCommand implements Command {
 
     @Override
     public String execute(String username, Long chatId, String[] args) {
-        sessionRepository.save(chatId, new TrackSession());
+        sessionRepository.save(chatId, new TrackSession(TrackCommandType.TRACK));
         return "Введите URL ссылки для отслеживания:";
     }
 }

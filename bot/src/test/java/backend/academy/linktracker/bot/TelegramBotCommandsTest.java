@@ -45,11 +45,11 @@ class TelegramBotCommandsTest {
         bot = mock(TelegramBot.class);
 
         InMemoryCommandRepository repository = new InMemoryCommandRepository();
-        handler = new TrackDialogHandler(sessionRepository, scrapperClient);
+        handler = new TrackDialogHandler(scrapperClient, sessionRepository);
         repository.addCommand(new StartCommand(scrapperClient));
         repository.addCommand(new HelpCommand(repository));
 
-        dispatcher = new CommandDispatcher(repository, bot, sessionRepository, handler);
+        dispatcher = new CommandDispatcher(repository, bot, handler);
     }
 
     @Test

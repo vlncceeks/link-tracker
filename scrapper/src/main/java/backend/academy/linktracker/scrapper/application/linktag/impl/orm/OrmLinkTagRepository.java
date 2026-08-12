@@ -24,18 +24,12 @@ public class OrmLinkTagRepository implements LinkTagRepository {
     }
 
     @Override
-    public List<Integer> findTagIdsByLinkId(Integer linkId) {
-        List<Integer> ids = new ArrayList<>();
-        int pageSize = 1000;
-        int pageNumber = 0;
-
-        Page<LinkTag> page;
-        do {
-            page = linkTagSpringRepository.findAllByLinkId(linkId, PageRequest.of(pageNumber, pageSize, Sort.by("id")));
-            page.getContent().forEach(p -> ids.add(p.getTagId()));
-            pageNumber++;
-        } while (page.hasNext());
-        return ids;
+    public List<Integer> findTagIdsByLinkId(Integer linkId, int limit, long lastId) {
+        return linkTagSpringRepository
+                .findAllByLinkIdAndIdGreaterThan(linkId, lastId, PageRequest.of(0, limit, Sort.by("id")))
+                .stream()
+                .map(LinkTag::getTagId)
+                .toList();
     }
 
     @Override

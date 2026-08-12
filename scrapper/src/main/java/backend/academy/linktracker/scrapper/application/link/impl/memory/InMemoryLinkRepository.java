@@ -3,12 +3,14 @@ package backend.academy.linktracker.scrapper.application.link.impl.memory;
 import backend.academy.linktracker.scrapper.application.Clearable;
 import backend.academy.linktracker.scrapper.application.chat.ChatRepository;
 import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
+import backend.academy.linktracker.scrapper.application.dto.response.LinksPage;
 import backend.academy.linktracker.scrapper.application.exception.ChatNotFoundException;
 import backend.academy.linktracker.scrapper.application.exception.LinkNotFoundException;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,18 +49,19 @@ public class InMemoryLinkRepository implements LinkRepository, Clearable {
     }
 
     @Override
-    public List<TrackedLink> findAll(Long chatId) {
-        if (!storage.containsKey(chatId)) return List.of();
-        return new ArrayList<>(storage.get(chatId).values());
+    public TrackedLink update(TrackedLink link) {
+        if (!chatRepository.exists(link.getChatId())) throw new ChatNotFoundException(link.getChatId());
+        storage.get(link.getChatId()).put(link.getUrl(), link);
+        return storage.get(link.getChatId()).get(link.getUrl());
     }
 
     @Override
-    public Map<String, List<Long>> getAllLinksWithChats() {
-        Map<String, List<Long>> result = new HashMap<>();
+    public LinksPage getLinksWithChats(int limit, long lastId) {
+        Map<String, List<Long>> result = new LinkedHashMap<>();
         storage.forEach(
                 (chatId, links) -> links.keySet().forEach(url -> result.computeIfAbsent(url, k -> new ArrayList<>())
                         .add(chatId)));
-        return result;
+        return new LinksPage(result, 0);
     }
 
     public void clear() {
@@ -73,7 +76,7 @@ public class InMemoryLinkRepository implements LinkRepository, Clearable {
     }
 
     @Override
-    public List<LinkResponse> findAllWithTags(Long chatId) {
+    public List<LinkResponse> findAllWithTags(Long chatId, int limit, long lastId) {
         if (!storage.containsKey(chatId)) return List.of();
 
         return storage.get(chatId).values().stream()

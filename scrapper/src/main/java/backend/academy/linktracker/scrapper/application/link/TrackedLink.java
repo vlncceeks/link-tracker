@@ -19,6 +19,7 @@ public class TrackedLink {
     private final String url;
 
     @Setter
+    @Column("last_checked_at")
     private Instant lastCheckedAt;
 
     public TrackedLink(Integer id, Long chatId, String url) {

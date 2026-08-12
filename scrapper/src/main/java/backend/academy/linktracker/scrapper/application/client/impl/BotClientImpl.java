@@ -1,6 +1,6 @@
 package backend.academy.linktracker.scrapper.application.client.impl;
 
-import backend.academy.linktracker.scrapper.application.client.BotClient;
+import backend.academy.linktracker.scrapper.application.client.MessageSender;
 import backend.academy.linktracker.scrapper.application.dto.request.LinkUpdateRequest;
 import backend.academy.linktracker.scrapper.application.exception.BotClientException;
 import backend.academy.linktracker.scrapper.infrastructure.configuration.BotProperties;
@@ -12,7 +12,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
 @Component
-public class BotClientImpl implements BotClient {
+public class BotClientImpl implements MessageSender {
     private static final Logger logger = LoggerFactory.getLogger(BotClientImpl.class);
 
     private final RestClient restClient;
@@ -30,7 +30,7 @@ public class BotClientImpl implements BotClient {
     }
 
     @Override
-    public void sendUpdate(LinkUpdateRequest request) {
+    public void send(LinkUpdateRequest request) {
         try {
             restClient.post().uri("/updates").body(request).retrieve().toBodilessEntity();
         } catch (ResourceAccessException e) {

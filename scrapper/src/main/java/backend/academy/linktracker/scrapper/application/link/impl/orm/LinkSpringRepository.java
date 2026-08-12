@@ -11,6 +11,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 public interface LinkSpringRepository
         extends CrudRepository<TrackedLink, Integer>, PagingAndSortingRepository<TrackedLink, Integer> {
+
     Optional<TrackedLink> findByChatIdAndUrl(Long chatId, String url);
 
     Page<TrackedLink> findAllByChatId(Long chatId, Pageable pageable);
@@ -26,7 +27,9 @@ public interface LinkSpringRepository
         ORDER BY tl.id
         LIMIT :limit
         """)
-    List<LinkWithTagRow> findAllWithTagsByChatIdKeySet(Long chatId, int lastId, int limit);
+    List<LinkWithTagRow> findAllWithTagsByChatIdKeySet(Long chatId, long lastId, int limit);
 
     Page<TrackedLink> findAll(Pageable pageable);
+
+    List<TrackedLink> findByIdGreaterThanOrderByIdAsc(Long id, Pageable pageable);
 }

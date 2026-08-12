@@ -7,4 +7,4 @@ public record LinkUpdateRequest(
         @NotNull Integer id,
         @NotNull String url,
         String description,
-        @NotNull List<Long> tgChatIds) {}
+        @NotNull List<Long> chatIds) {}

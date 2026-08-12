@@ -7,7 +7,7 @@ public interface LinkTagRepository {
 
     void removeTagFromLink(Integer linkId, Integer tagId);
 
-    List<Integer> findTagIdsByLinkId(Integer linkId);
+    List<Integer> findTagIdsByLinkId(Integer linkId, int limit, long lastId);
 
     List<Integer> findLinkIdsByTagId(Integer tagId);
 

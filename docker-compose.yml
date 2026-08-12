@@ -42,6 +42,8 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
       - SCRAPPER_URL=http://scrapper:8082
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     ports:
       - "8081:8081"
 
@@ -69,5 +71,15 @@ services:
       bot:
         condition: service_started
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
 volumes:
+  redis-data:
   postgres_data:
