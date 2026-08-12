@@ -2,6 +2,10 @@ server:
   port: 8082
 
 spring:
+  jpa:
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:scrapper}
     username: ${DB_USER:scrapper}
@@ -13,6 +17,11 @@ spring:
     name: scrapper
   config:
     import: optional:file:.env[.properties]
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092,localhost:9094,localhost:9095}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: com.fasterxml.jackson.databind.JsonSerializer
 
 app:
   stackoverflow:
@@ -22,11 +31,14 @@ app:
   github:
     token: ${GITHUB_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
     base-url: https://api.github.com
-  access-type: ${ACCESS_TYPE:SQL}
+  access-type: ${ACCESS_TYPE:ORM}
+  message-sender-type: ${MESSAGE_SENDER_TYPE:KAFKA}
   scheduler:
     interval: 30000
     batch-size: 1000
     thread-count: 4
+  kafka:
+    topic: link-updates
 
 bot:
   base-url: ${BOT_URL:http://localhost:8081}

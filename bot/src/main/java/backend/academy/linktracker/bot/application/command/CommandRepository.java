@@ -6,7 +6,7 @@ import java.util.Set;
 public interface CommandRepository {
     void addCommand(Command command);
 
-    Optional<Command> findCommand(String commandName);
+    Optional<Command> getCommand(String commandName);
 
     Set<Command> getAllCommands();
 }

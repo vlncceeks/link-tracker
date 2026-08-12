@@ -1,44 +1,30 @@
-package backend.academy.linktracker.scrapper.application.client.impl;
+package backend.academy.linktracker.scrapper.application.client.GitHubClientImpl;
 
-import backend.academy.linktracker.scrapper.application.client.GitHubClient;
 import backend.academy.linktracker.scrapper.application.dto.response.GitHubEventResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.GitHubRepositoryResponse;
-import backend.academy.linktracker.scrapper.infrastructure.configuration.GithubProperties;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
 
 @Component
-public class GitHubClientImpl implements GitHubClient {
-    private static final Logger logger = LoggerFactory.getLogger(GitHubClientImpl.class);
-    private static final Pattern GITHUB_URL = Pattern.compile("https://github\\.com/([^/]+)/([^/]+)");
-
-    private final RestClient restClient;
-
-    public GitHubClientImpl(GithubProperties properties) {
-        RestClient.Builder builder = RestClient.builder()
-                .baseUrl(properties.getBaseUrl())
-                .defaultHeader("Accept", "application/vnd.github+json")
-                .defaultHeader("X-GitHub-Api-Version", "2022-11-28")
-                .defaultHeader("Authorization", "Bearer " + properties.getToken());
-
-        this.restClient = builder.build();
-    }
+@RequiredArgsConstructor
+public class GitHubClientWrapper implements backend.academy.linktracker.scrapper.application.client.GitHubClient {
+    private static final Logger logger = LoggerFactory.getLogger(GitHubClientWrapper.class);
+    private final GitHubClientImpl gitHubClient;
 
     @Override
     public Optional<GitHubRepositoryResponse> fetchRepository(String owner, String repo) {
         logger.atDebug().addKeyValue("owner", owner).addKeyValue("repo", repo).log("Запрос к Github API");
         try {
-            GitHubRepositoryResponse response = restClient
+            GitHubRepositoryResponse response = gitHubClient
+                    .getRestClient()
                     .get()
                     .uri("/repos/{owner}/{repo}", owner, repo)
                     .retrieve()
@@ -65,7 +51,8 @@ public class GitHubClientImpl implements GitHubClient {
     public List<GitHubEventResponse> fetchEvents(String owner, String repo, Instant since) {
         logger.atDebug().addKeyValue("owner", owner).addKeyValue("repo", repo).log("Запрос к Github API");
         try {
-            GitHubEventResponse[] response = restClient
+            GitHubEventResponse[] response = gitHubClient
+                    .getRestClient()
                     .get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/repos/{owner}/{repo}/events")
@@ -94,11 +81,5 @@ public class GitHubClientImpl implements GitHubClient {
                     .log("Error when receiving GitHub response");
             return List.of();
         }
-    }
-
-    public static Optional<String[]> parseUrl(String url) {
-        Matcher matcher = GITHUB_URL.matcher(url);
-        if (!matcher.matches()) return Optional.empty();
-        return Optional.of(new String[] {matcher.group(1), matcher.group(2)});
     }
 }

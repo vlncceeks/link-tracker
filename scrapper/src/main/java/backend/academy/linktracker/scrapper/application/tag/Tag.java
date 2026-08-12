@@ -1,8 +1,23 @@
 package backend.academy.linktracker.scrapper.application.tag;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
+import lombok.NoArgsConstructor;
 
-@Table("tags")
-public record Tag(@Getter @Id Integer id, @Getter String name) {}
+@Entity
+@Table(name = "tags")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Tag {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    private String name;
+}

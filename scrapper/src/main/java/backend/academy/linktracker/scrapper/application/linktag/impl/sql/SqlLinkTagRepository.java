@@ -16,7 +16,6 @@ public class SqlLinkTagRepository implements LinkTagRepository {
         String sql = """
             INSERT INTO link_tags(link_id, tag_id)
             VALUES (?, ?)
-            ON CONFLICT (link_id, tag_id) DO NOTHING
         """;
 
         jdbcTemplate.update(sql, linkId, tagId);

@@ -1,7 +1,7 @@
 package backend.academy.linktracker.scrapper.infrastructure.service.impl;
 
 import backend.academy.linktracker.scrapper.application.client.StackOverflowClient;
-import backend.academy.linktracker.scrapper.application.client.impl.StackOverflowClientImpl;
+import backend.academy.linktracker.scrapper.application.client.StackOverflowClientImpl.StackOverflowClientWrapper;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowAnswerResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowCommentResponse;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
@@ -32,7 +32,7 @@ public class StackOverflowLinkUpdateChecker implements LinkUpdateChecker {
 
     @Override
     public Optional<String> check(TrackedLink link) {
-        return StackOverflowClientImpl.parseUrl(link.getUrl()).flatMap(questionId -> {
+        return StackOverflowClientWrapper.parseUrl(link.getUrl()).flatMap(questionId -> {
             try {
                 var question = stackOverflowClient.fetchQuestion(questionId);
                 var answers = stackOverflowClient.fetchAnswers(questionId, link.getLastCheckedAt());

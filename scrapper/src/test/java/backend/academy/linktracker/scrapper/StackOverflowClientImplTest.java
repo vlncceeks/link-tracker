@@ -6,7 +6,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import backend.academy.linktracker.scrapper.application.client.impl.StackOverflowClientImpl;
+import backend.academy.linktracker.scrapper.application.client.StackOverflowClientImpl.StackOverflowClientFactory;
+import backend.academy.linktracker.scrapper.application.client.StackOverflowClientImpl.StackOverflowClientImpl;
+import backend.academy.linktracker.scrapper.application.client.StackOverflowClientImpl.StackOverflowClientWrapper;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowResponse;
 import backend.academy.linktracker.scrapper.infrastructure.configuration.StackoverflowProperties;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
@@ -21,13 +23,17 @@ public class StackOverflowClientImplTest {
             .options(wireMockConfig().dynamicPort())
             .build();
 
-    private StackOverflowClientImpl client;
+    private StackOverflowClientImpl stackOverflowClient;
+    private StackOverflowClientWrapper client;
+    private StackOverflowClientFactory factory;
 
     @BeforeEach
     void setUp() {
         StackoverflowProperties properties = new StackoverflowProperties();
         properties.setBaseUrl(wireMock.baseUrl());
-        client = new StackOverflowClientImpl(properties);
+        factory = new StackOverflowClientFactory(properties);
+        stackOverflowClient = new StackOverflowClientImpl(factory);
+        client = new StackOverflowClientWrapper(stackOverflowClient);
     }
 
     @Test

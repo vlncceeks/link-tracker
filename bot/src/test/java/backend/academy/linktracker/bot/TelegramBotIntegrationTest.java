@@ -37,7 +37,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.wiremock.spring.EnableWireMock;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import(KafkaTestConfig.class)
 @ActiveProfiles("test")
 @EnableWireMock
 class TelegramBotIntegrationTest implements WithAssertions {

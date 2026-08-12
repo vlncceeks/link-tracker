@@ -25,6 +25,7 @@ public class OrmLinkRepository implements LinkRepository {
         return repository.save(toSave);
     }
 
+    @Transactional
     @Override
     public void remove(Long chatId, String url) {
         repository.deleteByChatIdAndUrl(chatId, url);

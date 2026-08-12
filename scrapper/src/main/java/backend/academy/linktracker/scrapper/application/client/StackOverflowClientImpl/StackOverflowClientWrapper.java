@@ -1,58 +1,35 @@
-package backend.academy.linktracker.scrapper.application.client.impl;
+package backend.academy.linktracker.scrapper.application.client.StackOverflowClientImpl;
 
 import backend.academy.linktracker.scrapper.application.client.StackOverflowClient;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowAnswerResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowCommentResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.StackOverflowResponse;
-import backend.academy.linktracker.scrapper.infrastructure.configuration.StackoverflowProperties;
-import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.client.support.HttpRequestWrapper;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClientResponseException;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Component
-public class StackOverflowClientImpl implements StackOverflowClient {
-    private static final Logger logger = LoggerFactory.getLogger(StackOverflowClientImpl.class);
+@RequiredArgsConstructor
+public class StackOverflowClientWrapper implements StackOverflowClient {
+    private static final Logger logger = LoggerFactory.getLogger(StackOverflowClientWrapper.class);
     private static final Pattern SO_URL = Pattern.compile("https://stackoverflow\\.com/questions/(\\d+).*");
 
-    private final RestClient restClient;
-
-    public StackOverflowClientImpl(StackoverflowProperties properties) {
-        this.restClient = RestClient.builder()
-                .baseUrl(properties.getBaseUrl())
-                .requestInterceptor((request, body, execution) -> {
-                    URI withParams = UriComponentsBuilder.fromUri(request.getURI())
-                            .queryParam("site", "stackoverflow")
-                            .queryParam("key", properties.getKey())
-                            .build()
-                            .toUri();
-                    return execution.execute(
-                            new HttpRequestWrapper(request) {
-                                @Override
-                                public URI getURI() {
-                                    return withParams;
-                                }
-                            },
-                            body);
-                })
-                .build();
-    }
+    private final StackOverflowClientImpl stackOverflowClient;
 
     @Override
     public Optional<StackOverflowResponse.StackOverflowItem> fetchQuestion(Long questionId) {
         logger.atDebug().addKeyValue("questionId", questionId).log("Запрос к StackOverflow API");
         try {
-            StackOverflowResponse response = restClient
+            StackOverflowResponse response = stackOverflowClient
+                    .getRestClient()
                     .get()
                     .uri("/questions/{id}?site=stackoverflow&filter=!nNPvSNdWme", questionId)
                     .retrieve()
@@ -77,7 +54,8 @@ public class StackOverflowClientImpl implements StackOverflowClient {
 
     public List<StackOverflowAnswerResponse.AnswerItem> fetchAnswers(Long questionId, Instant since) {
         try {
-            StackOverflowAnswerResponse response = restClient
+            StackOverflowAnswerResponse response = stackOverflowClient
+                    .getRestClient()
                     .get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/questions/{id}/answers")
@@ -102,7 +80,8 @@ public class StackOverflowClientImpl implements StackOverflowClient {
 
     public List<StackOverflowCommentResponse.CommentItem> fetchComments(Long questionId, Instant since) {
         try {
-            StackOverflowCommentResponse response = restClient
+            StackOverflowCommentResponse response = stackOverflowClient
+                    .getRestClient()
                     .get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/questions/{id}/answers")

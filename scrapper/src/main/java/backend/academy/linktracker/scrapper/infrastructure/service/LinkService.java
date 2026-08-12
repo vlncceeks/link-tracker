@@ -4,8 +4,10 @@ import backend.academy.linktracker.scrapper.application.dto.request.AddLinkReque
 import backend.academy.linktracker.scrapper.application.dto.request.RemoveLinkRequest;
 import backend.academy.linktracker.scrapper.application.dto.response.LinkResponse;
 import backend.academy.linktracker.scrapper.application.dto.response.ListLinksResponse;
+import backend.academy.linktracker.scrapper.application.exception.ChatNotFoundException;
 import backend.academy.linktracker.scrapper.application.exception.LinkAlreadyTrackedException;
 import backend.academy.linktracker.scrapper.application.exception.LinkNotFoundException;
+import backend.academy.linktracker.scrapper.application.exception.TagAlreadyAddedException;
 import backend.academy.linktracker.scrapper.application.link.LinkRepository;
 import backend.academy.linktracker.scrapper.application.link.TrackedLink;
 import backend.academy.linktracker.scrapper.application.linktag.LinkTagRepository;
@@ -18,6 +20,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +32,7 @@ public class LinkService {
     private final TagRepository tagRepository;
     private final LinkTagRepository linkTagRepository;
     private final SchedulerProperties properties;
+    private final ChatService chatService;
 
     public ListLinksResponse getAllByChatId(Long chatId) {
         List<LinkResponse> allLinks = new ArrayList<>();
@@ -55,6 +59,10 @@ public class LinkService {
 
     @Transactional
     public LinkResponse addLinkIntoChat(Long chatId, AddLinkRequest request) {
+        if (!chatService.exists(chatId)) {
+            throw new ChatNotFoundException(chatId);
+        }
+
         if (linkRepository.find(chatId, request.url()).isPresent()) {
             logger.atWarn()
                     .addKeyValue("chatId", chatId)
@@ -67,12 +75,24 @@ public class LinkService {
 
         List<String> tagNames = new ArrayList<>();
         for (String tagName : request.tags()) {
-            Tag tag = tagRepository.findByName(tagName).orElseGet(() -> tagRepository.add(tagName));
-            linkTagRepository.addTagToLink(link.getId(), tag.id());
-            tagNames.add(tag.name());
+            Tag tag = tagRepository.findByName(tagName).orElseGet(() -> {
+                try {
+                    return tagRepository.add(tagName);
+                } catch (DuplicateKeyException e) {
+                    throw new TagAlreadyAddedException("Тег: " + tagName + " уже существует.");
+                }
+            });
+
+            try {
+                linkTagRepository.addTagToLink(link.getId(), tag.getId());
+            } catch (DuplicateKeyException e) {
+                throw new TagAlreadyAddedException("Ссылка с тегом: " + tag.getName() + " уже существует.");
+            }
+
+            tagNames.add(tag.getName());
             logger.atInfo()
-                    .addKeyValue("tagId", tag.id())
-                    .addKeyValue("tagName", tag.name())
+                    .addKeyValue("tagId", tag.getId())
+                    .addKeyValue("tagName", tag.getName())
                     .log("Tag added");
         }
 
@@ -87,6 +107,10 @@ public class LinkService {
 
     @Transactional
     public LinkResponse removeLinkFromChat(Long chatId, RemoveLinkRequest request) {
+        if (!chatService.exists(chatId)) {
+            throw new ChatNotFoundException(chatId);
+        }
+
         TrackedLink link = linkRepository.find(chatId, request.url()).orElseThrow(() -> {
             logger.atWarn()
                     .addKeyValue("chatId", chatId)
@@ -124,7 +148,7 @@ public class LinkService {
         return allTagIds.stream()
                 .map(tagId -> tagRepository.findById(tagId))
                 .flatMap(Optional::stream)
-                .map(tag -> tag.name())
+                .map(tag -> tag.getName())
                 .toList();
     }
 }

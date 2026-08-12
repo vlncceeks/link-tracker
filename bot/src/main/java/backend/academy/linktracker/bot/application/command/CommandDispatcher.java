@@ -1,24 +1,22 @@
 package backend.academy.linktracker.bot.application.command;
 
+import backend.academy.linktracker.bot.application.exception.CommandNotFoundException;
 import backend.academy.linktracker.bot.application.state.TrackDialogHandler;
+import backend.academy.linktracker.bot.infrastructure.service.CommandService;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import java.util.Arrays;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@RequiredArgsConstructor
 public class CommandDispatcher {
     private static final Logger logger = LoggerFactory.getLogger(CommandDispatcher.class);
-    private final CommandRepository repository;
+    private final CommandService commandService;
     private final TelegramBot bot;
     private final TrackDialogHandler dialogHandler;
-
-    public CommandDispatcher(CommandRepository repository, TelegramBot bot, TrackDialogHandler dialogHandler) {
-        this.repository = repository;
-        this.bot = bot;
-        this.dialogHandler = dialogHandler;
-    }
 
     public void handleUpdate(Update update) {
         if (update.message() == null || update.message().text() == null) return;
@@ -44,7 +42,7 @@ public class CommandDispatcher {
                     .addKeyValue("username", username)
                     .addKeyValue("text", text)
                     .log("Неизвестная команда: сообщение не начинается с '/'");
-            bot.execute(new SendMessage(chatId, "Неизвестная команда. Воспользуйтесь /help."));
+            send(chatId, "Неизвестная команда. Воспользуйтесь /help.");
             return;
         }
 
@@ -66,42 +64,42 @@ public class CommandDispatcher {
     }
 
     private void runCommand(String commandName, String username, Long chatId, String[] args) {
-        repository
-                .findCommand(commandName)
-                .ifPresentOrElse(
-                        command -> {
-                            logger.atInfo()
-                                    .addKeyValue("chatId", chatId)
-                                    .addKeyValue("username", username)
-                                    .addKeyValue("command", commandName)
-                                    .log("Выполняется команда");
+        Command command;
+        try {
+            command = commandService.getCommand(commandName);
+        } catch (CommandNotFoundException e) {
+            logger.atWarn()
+                    .addKeyValue("chatId", chatId)
+                    .addKeyValue("username", username)
+                    .addKeyValue("command", commandName)
+                    .log("Неизвестная команда: отсутствует в репозитории");
+            send(chatId, "Неизвестная команда. Воспользуйтесь /help.");
+            return;
+        }
 
-                            try {
-                                String response = command.execute(username, chatId, args);
-                                bot.execute(new SendMessage(chatId, response));
-                                logger.atDebug()
-                                        .addKeyValue("chatId", chatId)
-                                        .addKeyValue("username", username)
-                                        .log("Отправлено сообщение /" + command.getName());
-                                logger.atInfo().log("Команда /" + command.getName() + " выполнена");
-                            } catch (Exception e) {
-                                logger.atError()
-                                        .addKeyValue("chatId", chatId)
-                                        .addKeyValue("username", username)
-                                        .addKeyValue("command", commandName)
-                                        .setCause(e)
-                                        .log("Ошибка при отправке сообщения для команды /" + command.getName());
-                                send(chatId, "Произошла ошибка. Попробуйте позже.");
-                            }
-                        },
-                        () -> {
-                            logger.atWarn()
-                                    .addKeyValue("chatId", chatId)
-                                    .addKeyValue("username", username)
-                                    .addKeyValue("command", commandName)
-                                    .log("Неизвестная команда: отсутствует в репозитории");
-                            send(chatId, "Неизвестная команда. Воспользуйтесь /help.");
-                        });
+        logger.atInfo()
+                .addKeyValue("chatId", chatId)
+                .addKeyValue("username", username)
+                .addKeyValue("command", commandName)
+                .log("Выполняется команда");
+
+        try {
+            String response = command.execute(username, chatId, args);
+            send(chatId, response);
+            logger.atDebug()
+                    .addKeyValue("chatId", chatId)
+                    .addKeyValue("username", username)
+                    .log("Отправлено сообщение /" + command.getName());
+            logger.atInfo().log("Команда /" + command.getName() + " выполнена");
+        } catch (Exception e) {
+            logger.atError()
+                    .addKeyValue("chatId", chatId)
+                    .addKeyValue("username", username)
+                    .addKeyValue("command", commandName)
+                    .setCause(e)
+                    .log("Ошибка при отправке сообщения для команды /" + command.getName());
+            send(chatId, "Произошла ошибка. Попробуйте позже.");
+        }
     }
 
     private boolean isInterruptingCommand(String text) {

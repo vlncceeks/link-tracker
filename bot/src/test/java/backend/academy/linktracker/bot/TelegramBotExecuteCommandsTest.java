@@ -16,10 +16,9 @@ import backend.academy.linktracker.bot.application.dto.response.ListLinksRespons
 import backend.academy.linktracker.bot.application.exception.ScrapperClientException;
 import backend.academy.linktracker.bot.application.state.TrackDialogHandler;
 import backend.academy.linktracker.bot.application.state.TrackSession;
-import backend.academy.linktracker.bot.application.state.TrackSessionRepository;
 import backend.academy.linktracker.bot.application.state.TrackState;
+import backend.academy.linktracker.bot.infrastructure.service.SessionService;
 import java.util.List;
-import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,7 @@ public class TelegramBotExecuteCommandsTest {
     private ScrapperClient scrapperClient;
 
     @Mock
-    private TrackSessionRepository sessionRepository;
+    private SessionService sessionService;
 
     @Container
     static GenericContainer<?> redis = new GenericContainer<>("redis:7-alpine").withExposedPorts(6379);
@@ -52,14 +51,14 @@ public class TelegramBotExecuteCommandsTest {
     void setUp() {
         listCommand = new ListCommand(scrapperClient);
 
-        handler = new TrackDialogHandler(scrapperClient, sessionRepository);
+        handler = new TrackDialogHandler(scrapperClient, sessionService);
     }
 
     @Test
     void handleUrl_validGithubUrl_movesToTagsStep() {
         TrackSession session = new TrackSession();
         session.setState(TrackState.WAITING_FOR_URL);
-        when(sessionRepository.find(CHAT_ID)).thenReturn(Optional.of(session));
+        when(sessionService.getTrackSession(CHAT_ID)).thenReturn(session);
 
         String response = handler.handle(CHAT_ID, VALID_GITHUB_URL);
 
@@ -73,7 +72,7 @@ public class TelegramBotExecuteCommandsTest {
     void handleUrl_validStackOverflowUrl_movesToTagsStep() {
         TrackSession session = new TrackSession();
         session.setState(TrackState.WAITING_FOR_URL);
-        when(sessionRepository.find(CHAT_ID)).thenReturn(Optional.of(session));
+        when(sessionService.getTrackSession(CHAT_ID)).thenReturn(session);
 
         String response = handler.handle(CHAT_ID, VALID_SO_URL);
 
@@ -87,7 +86,7 @@ public class TelegramBotExecuteCommandsTest {
         TrackSession session = new TrackSession();
         session.setState(TrackState.WAITING_FOR_TAGS);
         session.setUrl(VALID_GITHUB_URL);
-        when(sessionRepository.find(CHAT_ID)).thenReturn(Optional.of(session));
+        when(sessionService.getTrackSession(CHAT_ID)).thenReturn(session);
 
         String response = handler.handle(CHAT_ID, "java, spring");
 
@@ -95,7 +94,7 @@ public class TelegramBotExecuteCommandsTest {
         Assertions.assertThat(response).contains("java");
         verify(scrapperClient)
                 .addLink(eq(CHAT_ID), eq(new AddLinkRequest(VALID_GITHUB_URL, List.of("java", "spring"), List.of())));
-        verify(sessionRepository).delete(CHAT_ID);
+        verify(sessionService).delete(CHAT_ID);
     }
 
     @Test
@@ -103,20 +102,20 @@ public class TelegramBotExecuteCommandsTest {
         TrackSession session = new TrackSession();
         session.setState(TrackState.WAITING_FOR_TAGS);
         session.setUrl(VALID_GITHUB_URL);
-        when(sessionRepository.find(CHAT_ID)).thenReturn(Optional.of(session));
+        when(sessionService.getTrackSession(CHAT_ID)).thenReturn(session);
 
         String response = handler.handle(CHAT_ID, "/skip");
 
         Assertions.assertThat(response).contains(VALID_GITHUB_URL);
         verify(scrapperClient).addLink(eq(CHAT_ID), eq(new AddLinkRequest(VALID_GITHUB_URL, List.of(), List.of())));
-        verify(sessionRepository).delete(CHAT_ID);
+        verify(sessionService).delete(CHAT_ID);
     }
 
     @Test
     void handleUrl_invalidUrl_returnsErrorAndStaysOnUrlStep() {
         TrackSession session = new TrackSession();
         session.setState(TrackState.WAITING_FOR_URL);
-        when(sessionRepository.find(CHAT_ID)).thenReturn(Optional.of(session));
+        when(sessionService.getTrackSession(CHAT_ID)).thenReturn(session);
 
         String response = handler.handle(CHAT_ID, INVALID_URL);
 
@@ -131,7 +130,7 @@ public class TelegramBotExecuteCommandsTest {
         TrackSession session = new TrackSession();
         session.setState(TrackState.WAITING_FOR_TAGS);
         session.setUrl(VALID_GITHUB_URL);
-        when(sessionRepository.find(CHAT_ID)).thenReturn(Optional.of(session));
+        when(sessionService.getTrackSession(CHAT_ID)).thenReturn(session);
         doThrow(new ScrapperClientException("Ссылка уже отслеживается"))
                 .when(scrapperClient)
                 .addLink(any(), any());
@@ -139,19 +138,19 @@ public class TelegramBotExecuteCommandsTest {
         String response = handler.handle(CHAT_ID, "/skip");
 
         Assertions.assertThat(response).containsIgnoringCase("ошибка");
-        verify(sessionRepository).delete(CHAT_ID);
+        verify(sessionService).delete(CHAT_ID);
     }
 
     @Test
     void handle_cancelCommand_deletesSessionAndReturnsMessage() {
         TrackSession session = new TrackSession();
         session.setState(TrackState.WAITING_FOR_URL);
-        when(sessionRepository.find(CHAT_ID)).thenReturn(Optional.of(session));
+        when(sessionService.getTrackSession(CHAT_ID)).thenReturn(session);
 
         String response = handler.handle(CHAT_ID, "/cancel");
 
         Assertions.assertThat(response).containsIgnoringCase("отмен");
-        verify(sessionRepository).delete(CHAT_ID);
+        verify(sessionService).delete(CHAT_ID);
         verifyNoInteractions(scrapperClient);
     }
 

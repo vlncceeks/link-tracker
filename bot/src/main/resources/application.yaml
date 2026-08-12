@@ -8,6 +8,8 @@ spring:
       port: ${REDIS_PORT:6379}
   application:
     name: bot
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092,localhost:9094,localhost:9095}
 
 app:
   telegram:
@@ -15,6 +17,10 @@ app:
     token: ${TELEGRAM_TOKEN} # Use env variable. DO NOT KEEP TOKEN HERE
     update-listener-sleep: 1s
     debug: false
+  kafka:
+    topic: link-updates
+    retry:
+      attempts: 3
 
 scrapper:
   base-url: ${SCRAPPER_URL:http://localhost:8082}

@@ -25,4 +25,8 @@ public class ChatService {
         logger.atInfo().addKeyValue("chatId", id).log("Delete chat");
         chatRepository.delete(id);
     }
+
+    public boolean exists(Long id) {
+        return chatRepository.exists(id);
+    }
 }
